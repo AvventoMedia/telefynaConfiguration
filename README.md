@@ -1,0 +1,135 @@
+c# Telefyna Configuration
+
+This project contains a client side application for managing Telefyna's configurations which includes programming/scheduling
+
+## TODO
+- [ ] add period (daily/weekly/monthly) on resume one for playing daily and default to daily
+- [ ] on schedule preview, align time on start/top line in middle of the line
+- [ ] catch stuck image without or without audio, restart x times and if the same thing happens, reboot automatically
+- [ ] Manually set time on starting app programmatically
+    - startActivity(new Intent(android.provider.Settings.ACTION_DATE_SETTINGS));
+- [ ] Fix news scrolling, displacement/speed to ensure smoothness with very fast
+- [ ] Player killed with no logs, no relaunching, android kills app after some long availability
+- [ ] add desktop/extended screen support
+- [ ] app sometimes quits without any logs and relauching
+- [ ] add telefyna background service app
+    - can be used to keep checking if Telefyna is running
+    - can also include laucher in the future to be default to start immediately after teamviewer to be visible when restart is triggered
+    - 
+
+- [ ] Change special folder to have both INTRO and OUTRO, or have general & special have setting for intro/outro. I prefer the former though
+- [ ] maintanance should close all running players
+- [ ] fix 2 or one second to program end, fillers should not be played
+
+- [ ] Fix resuming Playlist.Type.LOCAL_RESUMING to resume exact time, logged at start of play, log in real time to track that if necessary else drop that category
+- [ ] seekTo/cache is not advancing
+- [ ] teamviewer enable udp to speed up uploads
+- [ ] playone shouldn't transition at all. always include only one media item in programs that's meant to be played
+- [ ] power off during resume play should resume the same program, cache current date and only transition (++) if cache is etiher null or not same
+- [ ] program bumpers should begin rather than play last
+- [ ] add playlist move/re-range index
+- [ ] playerError should log the mediafile too
+- [ ] empty programs should be triggered if nothing is able to play from the folder due to wrong format
+- [ ] restart should not re-shedule
+- [ ] some mp4 don't play in exoplayer, sdcard issue
+    com.google.android.exoplayer2.source.UnrecognizedInputFormatException: None of the available extractors (FragmentedMp4Extractor, Mp4Extractor, FlvExtractor, FlacExtractor, WavExtractor, AmrExtractor, PsExtractor, OggExtractor, TsExtractor, MatroskaExtractor, AdtsExtractor, Ac3Extractor, Ac4Extractor, Mp3Extractor, JpegExtractor) could read the stream
+- [ ] ensure a restart happens for unhandled exceptions
+- [ ] forward to next if wrong file is the first media file, proceed to next still. insert cache to reload from next
+- [ ] add logo position: top left config posibility
+- [ ] fix playing the same playlist
+- [ ] add support for hearing impaired section as we do with lowerthirds
+- [ ] fix restart, doesn't delete formerly existing scheduled events
+- [ ] add nowPlaying(index,position) to config and app, consume it with resuming
+- [ ] add backup.txt to export config with resuming settings
+- [ ] internet restore: replace switchNow(getCurrentIndex(), false); to 
+- [ ] restart has a bug on next scheduling. 
+- [ ] fix fillers programs empty
+- [ ] test automation disabled
+- [ ] cache now playing should only be for resuming
+- test pending intent/scheduling
+- [ ] news background/font etc customization through settings
+- [ ] only trigger graphics from switch not broadcast keeper
+- [ ] logo should be retained and not removed if existing the next program displays it
+- [x] rescheduling should drop existing scheduled events
+- [x] add way to restart app (restart.txt) after internet wait
+- mon change dare to dream sue challenge repeats at 15:30
+- [ ] fix tickers second return start position
+- fix 16:30 on Monday switching from network when q/a is ongoing
+- [ ] once internet is back, retrieve active program. on nextitem
+- [ ] unhandled exception restart testing
+- [x] close all handlers in switchNow around hideGraphics area
+- [x] add logo size in the documentations
+- [ ] scheduling to list playlists first before schedules to avoid messing up ids on delete
+- [ ] fix ERROR: java.lang.IllegalArgumentException: Unexpected runtime error when switching
+    - prepare();play(); in stuck finder and error
+- [x] init.txt test | synchronization
+- [ ] redo external monitor with teamviewer
+- [x] fillers switching to international
+- [x] 11:50, change dareToDream, vodoo ...
+- [x] fix tickers only first uses loops
+- [x] disable audio alert on remote connection with teamviewer
+- [ ] change audit log file to something like json or better stuff to easily support improved reporting
+- [x] fix fillers, playing international rather
+- [x] tickerview, support speed selection; slow|current, fast, very fast
+- [x] fix fillers, music is played first, 
+- [x] first resuming one is skipped
+- [x] fix audio delay: https://stackoverflow.com/questions/63754900/exoplayer-mediaplayer-android-delay-applying-playbackparameters
+    - decorder issues
+    - reinitiate player on every play/switch
+    - parhaps that ensulo video drops frames etc which affects encoding/decoding
+- [x] changing playlist active/graphics should instantly change all scheduled ones. add a function to do this and send event to it
+    - used a setting/checkbox to trigger this behavior
+- [ ] fix ERROR: java.lang.IllegalArgumentException: Unexpected runtime error immediately after switching 
+    - added a quick way out, ensure it causes no delays whatsover
+- preview, ensure last schedule is showed
+- remove bumpers section from all resuming
+- seems sequency transitioning is ordered in reverse, investigate and fix
+- CREATE playlist should position it immediately before schedules in positioning bot just as last item
+
+
+- [ ] Bug: one message in ticket hangs on the screen, tickerView: fix with one message
+- [ ] support bumpers for all local programs
+- [ ] fix readme on web config
+- [ ] not syncing in the set 5 minutes
+- [ ] fix error after switch
+- [ ] move fillers to sd/telefynaFiller and have playlist on internal as audit, merge audit or telefyna
+- [ ] fix relaunching app on icon press on tv
+- [ ] Add delay to playlist
+- [ ] add resuming_one category of playlist which plays one program only and resumes_next
+- [ ] 3ABN: install programs, fillers
+- [ ] 3ABN: work on drive sync with broadcast imac and telefyna, test sync times etc and init.txt
+- [ ] 3ABN: finish schedule dialogs with uganda & international
+- [ ] Replace less secure apps with request access for telefyna app
+- [ ] fix buttons hidden on mobile view
+- [ ] outline current slot and keep the tracker progressing
+- [ ] support php receivers on exporting config
+- [ ] create a qa testing framework to ensure the ui generator works well
+- [ ] add current/previous/next program tracking on the schedule preview | Not necessary
+- [x] suppourt channel colors at: https://r.3abn.org/sched/latest/
+- [x] move playlist selection into a separate php and on selection display below it a discription
+- [x] add delete all schedules button
+- [x] remove number from the name of the day of the week
+- [x] add system metrics export (part of maintanance&configExport) to email alers for php & java; (cpu, disk, users etc)
+- [x] support mobile, fix table etc scalling and popups plus cache refresh
+- [x] put active check on scheduling for overriding, ensure inactive is out of preview
+- [x] add space after ________
+- [x] add telefynaBot on footer of export email, also 'This is a system message and no need to respond to it' to be there
+- [x] UI info should contain and protection phrase for config etc
+- [x] Increase numbers of encoding and decoding real password to increase security, rename encrypting lib and methods
+- [x] write a way to share system errors with admin and attach auditLog and periodical logs
+- [x] test out videoView/lowerThirds again with the view last on graphics.xml
+- [x] graphics audit
+- [x] schedule to contain graphics, if replays isn't set. the ticker will show all through
+- [x] handle defaults to match with android
+- [x] support graphics configuration
+- [x] fix or support caching config on client side
+- [x] fill up colors for proceeding slots
+- [x] Build entire schedule preview
+- [x] Binding config.json to dom elements in memory
+- [x] Import & export config.json
+- [x] Automation, Notification Disabling triggering etc
+- [x] Adding playlists
+- [x] Scheduling & Editing playlists
+- [x] Listing ordered playlists and rendering clones right
+- [x] Delete playlist(s)
+- [x] Realtime change config.json updating and validation
