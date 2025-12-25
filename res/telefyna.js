@@ -573,6 +573,7 @@ angular.module("Telefyna", ['ngCookies'])
         if(!$scope.isEmpty(color) && !$scope.isEmpty($scope.previewData.weekly[index].slots[day])) {
             let claz = color.replace("#", "_");
             $scope.previewData.weekly[index].slots[day].claz = claz;
+            $scope.previewData.weekly[index].slots[day].color = color;
         
             // color the next vacant slots with upper slot
             for(let i = index + 1; i < $scope.previewData.weekly.length; i++) {
@@ -580,9 +581,10 @@ angular.module("Telefyna", ['ngCookies'])
                     break;
                 }
                 if($scope.isEmpty($scope.previewData.weekly[i].slots[day])) {
-                    $scope.previewData.weekly[i].slots[day] = {claz: claz};
+                    $scope.previewData.weekly[i].slots[day] = {claz: claz, color: color};
                 } else {
                     $scope.previewData.weekly[i].slots[day].claz = claz;
+                    $scope.previewData.weekly[i].slots[day].color = color;
                 }
             }
         }

@@ -260,13 +260,13 @@
 										<tbody>
 											<tr ng-repeat="(key, program) in previewData.weekly">
                                                 <td>{{program.start}}</td>
-                                                <td class="{{program.slots[1].claz}} {{program.slots[1].color}}" ng-init="classifyColor(program.slots[1].color, key, 1)">{{program.slots[1].name}} <div ng-if="program.slots[1].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
-                                                <td class="{{program.slots[2].claz}}" ng-init="classifyColor(program.slots[2].color, key, 2)">{{program.slots[2].name}} <div ng-if="program.slots[2].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
-                                            	<td class="{{program.slots[3].claz}}" ng-init="classifyColor(program.slots[3].color, key, 3)">{{program.slots[3].name}} <div ng-if="program.slots[3].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
-                                                <td class="{{program.slots[4].claz}}" ng-init="classifyColor(program.slots[4].color, key, 4)">{{program.slots[4].name}} <div ng-if="program.slots[4].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
-                                                <td class="{{program.slots[5].claz}}" ng-init="classifyColor(program.slots[5].color, key, 5)">{{program.slots[5].name}} <div ng-if="program.slots[5].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
-                                                <td class="{{program.slots[6].claz}}" ng-init="classifyColor(program.slots[6].color, key, 6)">{{program.slots[6].name}} <div ng-if="program.slots[6].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
-                                            	<td class="{{program.slots[7].claz}}" ng-init="classifyColor(program.slots[7].color, key, 7)">{{program.slots[7].name}} <div ng-if="program.slots[7].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
+                                                <td class="{{program.slots[1].claz}}" style="background-color:{{program.slots[1].color}} !important; box-shadow: inset 0 0 0 1000px {{program.slots[1].color}} !important;" ng-init="classifyColor(program.slots[1].color, key, 1)">{{program.slots[1].name}} <div ng-if="program.slots[1].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
+                                                <td class="{{program.slots[2].claz}}" style="background-color:{{program.slots[2].color}} !important; box-shadow: inset 0 0 0 1000px {{program.slots[2].color}} !important;" ng-init="classifyColor(program.slots[2].color, key, 2)">{{program.slots[2].name}} <div ng-if="program.slots[2].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
+                                            	<td class="{{program.slots[3].claz}}" style="background-color:{{program.slots[3].color}} !important; box-shadow: inset 0 0 0 1000px {{program.slots[3].color}} !important;" ng-init="classifyColor(program.slots[3].color, key, 3)">{{program.slots[3].name}} <div ng-if="program.slots[3].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
+                                                <td class="{{program.slots[4].claz}}" style="background-color:{{program.slots[4].color}} !important; box-shadow: inset 0 0 0 1000px {{program.slots[4].color}} !important;" ng-init="classifyColor(program.slots[4].color, key, 4)">{{program.slots[4].name}} <div ng-if="program.slots[4].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
+                                                <td class="{{program.slots[5].claz}}" style="background-color:{{program.slots[5].color}} !important; box-shadow: inset 0 0 0 1000px {{program.slots[5].color}} !important;" ng-init="classifyColor(program.slots[5].color, key, 5)">{{program.slots[5].name}} <div ng-if="program.slots[5].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
+                                                <td class="{{program.slots[6].claz}}" style="background-color:{{program.slots[6].color}} !important; box-shadow: inset 0 0 0 1000px {{program.slots[6].color}} !important;" ng-init="classifyColor(program.slots[6].color, key, 6)">{{program.slots[6].name}} <div ng-if="program.slots[6].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
+                                            	<td class="{{program.slots[7].claz}}" style="background-color:{{program.slots[7].color}} !important; box-shadow: inset 0 0 0 1000px {{program.slots[7].color}} !important;" ng-init="classifyColor(program.slots[7].color, key, 7)">{{program.slots[7].name}} <div ng-if="program.slots[7].hasRepeat" class="badge badge-danger"><span class="repeat-text">Repeat</span></div></td>
                                             </tr>
 										</tbody>
 									</table>
@@ -283,7 +283,7 @@
 										<tbody>
 											<tr ng-repeat="program in previewData.dated">
 												<td>{{program.at}}</td>
-												<td ng-style="{'background-color': program.color}">{{program.name}}</td>
+												<td style="background-color:{{program.color}} !important; box-shadow: inset 0 0 0 1000px {{program.color}} !important;">{{program.name}}</td>
 											</tr>
 										</tbody>
 									</table>
