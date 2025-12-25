@@ -132,4 +132,4 @@ This project contains a client side application for managing Telefyna's configur
 - [x] Scheduling & Editing playlists
 - [x] Listing ordered playlists and rendering clones right
 - [x] Delete playlist(s)
-- [x] Realtime change config.json updating and validation
+- [x] Realtime change config.json updating and validation# telefynaConfiguration
