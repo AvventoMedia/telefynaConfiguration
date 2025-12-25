@@ -1,0 +1,203 @@
+body {
+    text-align: center;
+    background-color: black;
+    color: white;
+}
+
+label {
+    margin-bottom: unset;
+}
+
+.logo {
+    margin-bottom: -5px;
+    margin-top: -5px;
+}
+
+.modal-dialog {
+    max-width: unset;
+}
+
+.section {
+    margin: 2px;
+    padding: 2px;
+    border: 1px solid #9b9c9c;
+    border-radius: 5px;
+}
+
+.section.action {
+    margin: 0px;
+}
+
+.section .action, .modal-body input {
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
+.section .action .action-content {
+    margin: auto;
+}
+
+.modal {
+    background-color: white;
+    color: black;
+    width:95%;
+    height: 90%;
+}
+
+#preview {
+    width:90%;
+    height: 90%;
+    -webkit-print-color-adjust:exact;
+}
+
+.config-result {
+    background-color: rgb(231, 234, 236);
+    color: black;
+    text-align: left;
+}
+
+.preview-print {
+    color: black;
+}
+#print-title {
+    text-align: center;
+}
+
+.table th, .table td {
+    border: 1px solid #dee2e6;
+    padding: .2rem;
+}
+
+.btn-colorselector {
+    border: .2px solid black;
+}
+
+.alert-warning {
+    color: gray;
+    font-size: 25px;
+}
+
+.info {
+    font-size: 14px;
+}
+
+.modal-footer {
+    display: revert;
+}
+
+.btn {
+    margin-bottom: 2px;
+}
+
+#footer {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+#footer, .slogan {
+    color: #17a3b885;
+    font-size: 14px;
+
+}
+
+#footer label, .slogan {
+    font-size: 10px;
+}
+
+/* Preview backgrounds */
+._00cc99 {
+    background-color: #00cc99;
+}
+
+._00ccff {
+    background-color: #00ccff;
+}
+
+._6666ff {
+    background-color: #6666ff;
+}
+                                     
+._28a745 {
+    background-color: #28a745;
+}
+
+._ffff66 {
+    background-color: #ffff66;
+}
+
+._66ff33 {
+    background-color: #66ff33;
+}
+
+._ff6600 {
+    background-color: #ff6600;
+}
+
+._ff33cc {
+    background-color: #ff33cc;
+}
+
+._666699 {
+    background-color: #666699;
+}
+
+._e0ebeb {
+    background-color: #e0ebeb;
+}
+
+._990099 {
+    background-color: #990099;
+}
+
+._993333 {
+    background-color: #993333;
+}
+
+._808080 {
+    background-color: #808080;
+}
+
+._ccccff {
+    background-color: #ccccff;
+}
+
+._336600 {
+    background-color: #336600;
+}
+
+._99ff99 {
+    background-color: #99ff99;
+}
+
+._66ffcc {
+    background-color: #66ffcc;
+}
+
+._ccffcc {
+    background-color: #ccffcc;
+}
+
+._ffccff {
+    background-color: #ffccff;
+}
+
+._0060aa {
+    background-color: #0060aa;
+}
+
+._f9b724 {
+    background-color: #f9b724;
+}
+
+._775549 {
+    background-color: #775549;
+}
+
+._2c0f7d {
+    background-color: #2c0f7d;
+}
+
+._607d8b {
+    background-color: #607d8b;
+}
