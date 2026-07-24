@@ -579,7 +579,7 @@
         </section>
 
         <!-- Footer -->
-        <footer class="app-footer text-center py-4 mt-4 border-top">
+        <footer class="app-footer text-center py-4 mt-auto border-top">
             <div class="container">
                 <p class="mb-1">
                     &copy; 2026 AvventoMedia. All rights reserved. |
