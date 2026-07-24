@@ -284,6 +284,24 @@ angular.module("Telefyna", ['ngCookies'])
         return startTime;
     };
 
+    $scope.getScheduleSummary = function(p, k) {
+        let time = $scope.getScheduledStartTime(p, k);
+        let days = $scope.getScheduledDaysText(p, k);
+        let dates = $scope.getScheduledDatesText(p, k);
+
+        if (!time && !days && !dates) return "";
+
+        let details = [];
+        if (days) details.push(days);
+        if (dates) details.push(dates);
+
+        if (time) {
+            return time + (details.length ? " (" + details.join(", ") + ")" : "");
+        } else {
+            return details.join(", ");
+        }
+    };
+
     $scope.schedulePlaylist = function(index) {
         $scope.schedule = String(index);
         $scope.renderScheduling();
