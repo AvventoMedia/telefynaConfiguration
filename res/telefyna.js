@@ -206,34 +206,15 @@ angular.module("Telefyna", ['ngCookies'])
     };
 
     $scope.getScheduledDaysText = function(p, k) {
-        if (!p) return "";
+        if (!p || $scope.isNotScheduled(p)) return "";
         let daysArray = [];
 
         if (!$scope.isEmpty(p.days)) {
             daysArray = p.days.map(Number);
-        } else if ($scope.isNotScheduled(p) && $scope.config && $scope.config.playlists) {
-            angular.forEach($scope.config.playlists, function(s) {
-                if (!$scope.isNotScheduled(s) && (s.schedule == k || s.schedule === String(k))) {
-                    if (!$scope.isEmpty(s.days)) {
-                        s.days.forEach(function(d) {
-                            let num = Number(d);
-                            if (!daysArray.includes(num)) daysArray.push(num);
-                        });
-                    }
-                }
-            });
         }
 
         if (daysArray.length === 0) {
-            let hasStartTime = p.start;
-            if (!hasStartTime && $scope.isNotScheduled(p) && $scope.config && $scope.config.playlists) {
-                angular.forEach($scope.config.playlists, function(s) {
-                    if (!$scope.isNotScheduled(s) && (s.schedule == k || s.schedule === String(k))) {
-                        if (s.start) hasStartTime = true;
-                    }
-                });
-            }
-            if (hasStartTime) return "Daily";
+            if (p.start) return "Daily";
             return "";
         }
 
@@ -248,21 +229,11 @@ angular.module("Telefyna", ['ngCookies'])
     };
 
     $scope.getScheduledDatesText = function(p, k) {
-        if (!p) return "";
+        if (!p || $scope.isNotScheduled(p)) return "";
         let datesArray = [];
 
         if (!$scope.isEmpty(p.dates)) {
             datesArray = angular.copy(p.dates);
-        } else if ($scope.isNotScheduled(p) && $scope.config && $scope.config.playlists) {
-            angular.forEach($scope.config.playlists, function(s) {
-                if (!$scope.isNotScheduled(s) && (s.schedule == k || s.schedule === String(k))) {
-                    if (!$scope.isEmpty(s.dates)) {
-                        s.dates.forEach(function(d) {
-                            if (!datesArray.includes(d)) datesArray.push(d);
-                        });
-                    }
-                }
-            });
         }
 
         if (datesArray.length === 0) return "";
@@ -271,35 +242,8 @@ angular.module("Telefyna", ['ngCookies'])
     };
 
     $scope.getScheduledStartTime = function(p, k) {
-        if (!p) return "";
-        if (p.start) return p.start;
-        let startTime = "";
-        if ($scope.isNotScheduled(p) && $scope.config && $scope.config.playlists) {
-            angular.forEach($scope.config.playlists, function(s) {
-                if (!$scope.isNotScheduled(s) && (s.schedule == k || s.schedule === String(k))) {
-                    if (s.start && !startTime) startTime = s.start;
-                }
-            });
-        }
-        return startTime;
-    };
-
-    $scope.getScheduleSummary = function(p, k) {
-        let time = $scope.getScheduledStartTime(p, k);
-        let days = $scope.getScheduledDaysText(p, k);
-        let dates = $scope.getScheduledDatesText(p, k);
-
-        if (!time && !days && !dates) return "";
-
-        let details = [];
-        if (days) details.push(days);
-        if (dates) details.push(dates);
-
-        if (time) {
-            return time + (details.length ? " (" + details.join(", ") + ")" : "");
-        } else {
-            return details.join(", ");
-        }
+        if (!p || $scope.isNotScheduled(p)) return "";
+        return p.start || "";
     };
 
     $scope.schedulePlaylist = function(index) {
