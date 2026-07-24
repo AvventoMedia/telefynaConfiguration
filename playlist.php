@@ -1,67 +1,114 @@
-<div class="alert alert-danger section action" ng-show="!isEmpty(error)" role="alert">{{error}}</div>
-<div class="section action" ng-if="edit != 0 && edit != 1 && !isEmpty(config.playlists) && config.playlists.length != 1">
-	<label class="checkbox-inline">
-		<input ng-model="playlist.active" type="checkbox"> Active</label>
+<div class="alert alert-danger" ng-show="!isEmpty(error)" role="alert">{{error}}</div>
+
+<div class="card p-3 mb-3 border-0" ng-if="(edit != 0 && edit != 1 && !isEmpty(config.playlists) && config.playlists.length != 1) || !isEmpty(edit)">
+	<div class="form-check form-switch mb-2" ng-if="edit != 0 && edit != 1 && !isEmpty(config.playlists) && config.playlists.length != 1">
+		<input class="form-check-input" ng-model="playlist.active" type="checkbox" id="chkActive">
+		<label class="form-check-label font-weight-bold" for="chkActive">Active Playlist / Schedule</label>
+	</div>
+	<div class="form-check form-switch" ng-if="!isEmpty(edit)">
+		<input class="form-check-input" ng-model="overrideSchedules" type="checkbox" id="chkOverride">
+		<label class="form-check-label font-weight-bold" for="chkOverride">Override Name, Active Status, Color & Graphics for Schedules</label>
+	</div>
 </div>
-<div class="section action" ng-if="!isEmpty(edit)">
-	<label class="checkbox-inline">
-		<input ng-model="overrideSchedules" type="checkbox"> Override name, active, color, emptyReplacer, seekTo & Graphics for Schedules</label>
+
+<div class="row">
+	<div class="col-md-6 mb-3">
+		<label class="form-label fw-bold mb-2">Playlist Name</label>
+		<input class="form-control" ng-model="playlist.name" placeholder="e.g. Morning Broadcast" required type="text">
+	</div>
+	<div class="col-md-6 mb-3">
+		<label class="form-label font-weight-bold">Description</label>
+		<input class="form-control" ng-model="playlist.description" placeholder="Brief description..." type="text">
+	</div>
 </div>
-<div class="section action">* Name *
-	<input class="form-control" ng-model="playlist.name" required type="text">
-</div>
-<div class="section action">Description
-	<input class="form-control" ng-model="playlist.description" type="text">
-</div>
+
 <?php include 'playlistType.php';?>
-<div class="section action">Index of playlist to replace with when empty
-	<input class="form-control flex-wrap" ng-model="playlist.emptyReplacer" type="number">
+
+<div class="row mt-3">
+	<div class="col-md-6 mb-3">
+		<label class="form-label font-weight-bold">
+			<span ng-if="playlist.type == 'ONLINE'" class="fw-bold">Stream URL</span>
+			<span ng-if="playlist.type != 'ONLINE'" class="fw-bold">Local Folder Name</span>
+		</label>
+		<input class="form-control" ng-model="playlist.urlOrFolder" placeholder="Folder or URL..." required type="text">
+	</div>
+	<div class="col-md-6 mb-3">
+		<label class="form-label font-weight-bold">Empty Replacer Playlist Index</label>
+		<input class="form-control" ng-model="playlist.emptyReplacer" placeholder="Optional playlist index" type="number">
+	</div>
 </div>
-<div class="section action" ng-if="playlist.type.indexOf('LOCAL_RESUMING') == 0">
-	SeekTo Starting program index (0-based)<input class="form-control" ng-model="playlist.seekTo.program" type="number">
-	SeekTo position (milliseconds)<input class="form-control" ng-model="playlist.seekTo.position" type="number">
+
+<div class="row" ng-if="playlist.type.indexOf('LOCAL_RESUMING') == 0">
+	<div class="col-md-6 mb-3">
+		<label class="form-label font-weight-bold">SeekTo Starting Program Index (0-based)</label>
+		<input class="form-control" ng-model="playlist.seekTo.program" type="number">
+	</div>
+	<div class="col-md-6 mb-3">
+		<label class="form-label font-weight-bold">SeekTo Position (Milliseconds)</label>
+		<input class="form-control" ng-model="playlist.seekTo.position" type="number">
+	</div>
 </div>
-<div class="section action">
-	<label ng-if="playlist.type == 'ONLINE'">* Stream URL *</label>
-	<label ng-if="playlist.type != 'ONLINE'">* Local folder name, separate with # to use additional programs in other folders *</label>
-	<input class="form-control" ng-model="playlist.urlOrFolder" required type="text">
+
+<div class="card p-3 mb-3 border-0">
+	<label class="form-label font-weight-bold mb-2">Schedule Color Indicator</label>
+	<div class="color-swatch-grid">
+		<span ng-repeat="c in availableColors" 
+			  class="color-swatch-item" 
+			  ng-style="{'background-color': c}" 
+			  ng-class="{'color-swatch-active': playlist.color === c}" 
+			  ng-click="selectColorSwatch(c)">
+			<span ng-if="playlist.color === c" class="text-white font-weight-bold">✓</span>
+		</span>
+	</div>
 </div>
-<div class="section action" ng-if="playlist.type != 'ONLINE'">
-	<label class="checkbox-inline"><input ng-model="playlist.usingExternalStorage" type="checkbox"> Using external Storage</label>
+
+<div class="mb-3" ng-if="playlist.type != 'ONLINE'">
+	<label class="form-label font-weight-bold mb-2">Storage Source</label>
+	<div class="playlist-type-grid" style="grid-template-columns: 1fr;">
+		<div class="type-card" 
+		     ng-class="{'type-card-active': playlist.usingExternalStorage}" 
+		     ng-click="playlist.usingExternalStorage = !playlist.usingExternalStorage">
+			<div class="radio-indicator">
+				<div class="radio-dot" ng-if="playlist.usingExternalStorage"></div>
+			</div>
+			<div class="type-card-icon"><i class="fa-solid fa-hard-drive" ng-class="playlist.usingExternalStorage ? 'text-primary' : 'text-secondary'"></i></div>
+			<div class="type-card-content">
+				<div class="type-card-title">Use External Storage (SDCard / USB Drive)</div>
+				<div class="type-card-desc">Read folders from <code>/telefyna</code> on attached SDCard or USB drive instead of internal storage.</div>
+			</div>
+		</div>
+	</div>
 </div>
-<div ng-if="playlist.usingExternalStorage == true">playlist, bumper and lowerThird folders will be retrived from the /telefyna folder in SDCard/USB drive attached if any exists else Internal storage</div>
-<div class="section action select-color">Preview Color
-	<select class="color-selector" ng-change="changeSelectedColor()" ng-model="playlist.color">
-		<option data-color="#00cc99" value="#00cc99"></option>
-		<option data-color="#00ccff" value="#00ccff"></option>
-		<option data-color="#6666ff" value="#6666ff"></option>
-		<option data-color="#28a745" value="#28a745"></option>
-		<option data-color="#ffff66" value="#ffff66"></option>
-		<option data-color="#66ff33" value="#66ff33"></option>
-		<option data-color="#ff6600" value="#ff6600"></option>
-		<option data-color="#ff33cc" value="#ff33cc"></option>
-		<option data-color="#666699" value="#666699"></option>
-		<option data-color="#e0ebeb" value="#e0ebeb"></option>
-		<option data-color="#990099" value="#990099"></option>
-		<option data-color="#993333" value="#993333"></option>
-		<option data-color="#808080" value="#808080"></option>
-		<option data-color="#ccccff" value="#ccccff"></option>
-		<option data-color="#336600" value="#336600"></option>
-		<option data-color="#99ff99" value="#99ff99"></option>
-		<option data-color="#66ffcc" value="#66ffcc"></option>
-		<option data-color="#ccffcc" value="#ccffcc"></option>
-		<option data-color="#ffccff" value="#ffccff"></option>
-		<option data-color="#0060aa" value="#0060aa"></option>
-		<option data-color="#f9b724" value="#f9b724"></option>
-		<option data-color="#775549" value="#775549"></option>
-		<option data-color="#2c0f7d" value="#2c0f7d"></option>
-		<option data-color="#607d8b" value="#607d8b"></option>
-	</select>
-</div>
-<div class="section action" ng-if="playlist.type == 'LOCAL_SEQUENCED' || playlist.type == 'LOCAL_RANDOMIZED'">
-	<label class="checkbox-inline"><input ng-model="playlist.playingGeneralBumpers" type="checkbox"> Playing General Bumpers</label>
-</div>
-<div class="section action" ng-if="playlist.type == 'LOCAL_SEQUENCED' || playlist.type == 'LOCAL_RANDOMIZED'">Special Bumper folder name
-	<input class="form-control" ng-model="playlist.specialBumperFolder" type="text">
+
+<div class="mb-3" ng-if="playlist.type == 'LOCAL_SEQUENCED' || playlist.type == 'LOCAL_RANDOMIZED'">
+	<label class="form-label font-weight-bold mb-2">Bumper Settings</label>
+	<div class="row">
+		<div class="col-md-6 mb-3">
+			<div class="type-card h-100" 
+			     ng-class="{'type-card-active': playlist.playingGeneralBumpers}" 
+			     ng-click="playlist.playingGeneralBumpers = !playlist.playingGeneralBumpers">
+				<div class="radio-indicator">
+					<div class="radio-dot" ng-if="playlist.playingGeneralBumpers"></div>
+				</div>
+				<div class="type-card-icon"><i class="fa-solid fa-film" ng-class="playlist.playingGeneralBumpers ? 'text-primary' : 'text-secondary'"></i></div>
+				<div class="type-card-content">
+					<div class="type-card-title">Play General Bumpers</div>
+					<div class="type-card-desc">Interleave standard bumpers between videos.</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6 mb-3">
+			<div class="card p-3 h-100 border-0 bg-card-subtle" style="border-radius: 12px; border: 2px solid transparent;">
+				<label class="form-label font-weight-bold mb-2">Special Bumper Folder</label>
+				<input class="form-control" ng-model="playlist.specialBumperFolder" placeholder="Folder Name..." type="text">
+				<small class="opacity-75 mt-2 d-block" style="font-size:0.8rem;">Override the default bumper folder for this specific playlist.</small>
+			</div>
+		</div>
+	</div>
+	</div>
 </div>
 								
+<div class="mt-4 pt-3 border-top">
+	<h6 class="fw-bold mb-3"><i class="fa-solid fa-layer-group me-2 text-primary"></i>Default Graphic Overlays</h6>
+	<?php include 'graphics.php';?>
+</div>

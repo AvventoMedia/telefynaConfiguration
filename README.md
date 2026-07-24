@@ -3,6 +3,8 @@ c# Telefyna Configuration
 This project contains a client side application for managing Telefyna's configurations which includes programming/scheduling
 
 ## TODO
+- [x] add footer with AvventoMedia copyright and links
+- [x] set PDF schedule print name based on config name and version
 - [ ] add period (daily/weekly/monthly) on resume one for playing daily and default to daily
 - [ ] on schedule preview, align time on start/top line in middle of the line
 - [ ] catch stuck image without or without audio, restart x times and if the same thing happens, reboot automatically

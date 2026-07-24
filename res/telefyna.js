@@ -95,6 +95,8 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.datePickerValue = undefined;
         $scope.edit = undefined;
         $scope.schedule = undefined;
+        if (!$scope.ui) $scope.ui = {};
+        $scope.ui.newsMsgText = "";
         $scope.deletable = [];
         $scope.alert = {};
         $scope.alert.attachConfig = false;
@@ -163,22 +165,14 @@ angular.module("Telefyna", ['ngCookies'])
         return color;    
     }
 
-    $scope.getPlaylistName = function(index, fullySpecified) {
+    $scope.getPlaylistName = function(index) {
         let name;
         let playlist = $scope.config.playlists[index];
         if(!$scope.isEmpty(playlist)) {
-            let icon = playlistActive(playlist) ? "✅" : "❌";
             if(!$scope.isNotScheduled(playlist)) {
                 playlist.name = $scope.config.playlists[playlist.schedule].name;
             }
-            name = (fullySpecified == true ? icon + " " : "") + playlist.name;
-            if(fullySpecified == true) {
-                name = name + " #" + (index + 1)
-                    + (!$scope.isEmpty(playlist.start) ? " | @" + playlist.start : "")
-                    + (!$scope.isEmpty(playlist.days) ? " | Days:" + playlist.days.join(",") : "")
-                    + (!$scope.isEmpty(playlist.dates) ? " | " + playlist.dates.join(",") : "")
-                    + ((!$scope.isEmpty(playlist.graphics) && playlist.graphics.displayRepeatWatermark) ? " | REPEAT" : "");
-            }
+            name = playlist.name;
         }
         return name;
     }
@@ -201,6 +195,30 @@ angular.module("Telefyna", ['ngCookies'])
         return $scope.isEmpty(playlist.schedule);
     }
 
+    $scope.getPlaylistCount = function() {
+        if (!$scope.config || !$scope.config.playlists) return 0;
+        return $scope.config.playlists.filter(function(p) { return $scope.isNotScheduled(p); }).length;
+    };
+
+    $scope.getScheduleCount = function() {
+        if (!$scope.config || !$scope.config.playlists) return 0;
+        return $scope.config.playlists.filter(function(p) { return !$scope.isNotScheduled(p); }).length;
+    };
+
+    $scope.schedulePlaylist = function(index) {
+        $scope.schedule = String(index);
+        $scope.renderScheduling();
+    }
+
+    $scope.matchesSearch = function(playlist, term) {
+        if (!term) return true;
+        let t = term.toLowerCase();
+        let name = (playlist.name || "").toLowerCase();
+        let url = (playlist.urlOrFolder || "").toLowerCase();
+        let type = (playlist.type || "").toLowerCase();
+        return name.indexOf(t) !== -1 || url.indexOf(t) !== -1 || type.indexOf(t) !== -1;
+    }
+
     $scope.verifyPlaylist = function() {
         angular.forEach($scope.config.playlists, function(playlist, key) { 
             if($scope.playlist.name == playlist.name && $scope.playlist.urlOrFolder == playlist.urlOrFolder) {
@@ -213,25 +231,24 @@ angular.module("Telefyna", ['ngCookies'])
         if(!$scope.isEmpty($scope.playlist.type)) {
             if($scope.playlist.type == "ONLINE" && !isUrlValid($scope.playlist.urlOrFolder)) {
                 $scope.error = "Stream URL Or Local folder name should be set to right URL";
-                jQuery("#add").scrollTop(0);
+                window.scrollTo(0, 0);
             } else if($scope.playlist.type != "ONLINE" && isUrlValid($scope.playlist.urlOrFolder)) {
                 $scope.error = "Stream URL Or Local folder name should be set to folder name not URL";
-                jQuery("#add").scrollTop(0);
+                window.scrollTo(0, 0);
             } else {
                 $scope.modifying();
                 $scope.verifyPlaylist();
                 if(!$scope.isEmpty(!$scope.error)) {
                     $scope.config.playlists.push($scope.playlist);
-                    jQuery("#close-add").click();
                     $scope.clear();
                 } else {
-                    jQuery("#add").scrollTop(0);
+                    window.scrollTo(0, 0);
                 }
                 window.localStorage.config = JSON.stringify($scope.config);
             }
         } else {
             $scope.error = "Type is required";
-            jQuery("#add").scrollTop(0);
+            window.scrollTo(0, 0);
         }
     }
 
@@ -248,17 +265,19 @@ angular.module("Telefyna", ['ngCookies'])
         if($scope.isEmpty($scope.playlist.graphics)) {
             clearGraphics();
         }
+        if (!$scope.ui) $scope.ui = {};
+        $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("#").join("\n") : "";
     }
 
     $scope.revise = function() {
         if(!$scope.isEmpty($scope.playlist.type)) {
             if($scope.playlist.type == "ONLINE" && !isUrlValid($scope.playlist.urlOrFolder)) {
                 $scope.error = "Stream URL Or Local folder name should be set to right URL";
-                jQuery("#edit").scrollTop(0);
+                window.scrollTo(0, 0);
                 $scope.playlist.urlOrFolder = $scope.config.playlists[parseInt($scope.edit)].urlOrFolder;
             } else if($scope.playlist.type != "ONLINE" && isUrlValid($scope.playlist.urlOrFolder)) {
                 $scope.error = "Stream URL Or Local folder name should be set to folder name not URL";
-                jQuery("#edit").scrollTop(0);
+                window.scrollTo(0, 0);
                 $scope.playlist.urlOrFolder = $scope.config.playlists[parseInt($scope.edit)].urlOrFolder;
             } else {
                 if(!$scope.isEmpty($scope.edit)) {
@@ -268,16 +287,15 @@ angular.module("Telefyna", ['ngCookies'])
                         overwriteSchedules(parseInt($scope.edit), $scope.playlist);
                     }
                     window.localStorage.config = JSON.stringify($scope.config);
-                    jQuery("#close-edit").click();
                     $scope.clear();
                 } else {
                     $scope.error = "Select a playlist to edit";
-                    jQuery("#edit").scrollTop(0);
+                    window.scrollTo(0, 0);
                 }
             }
         } else {
             $scope.error = "Type is required";
-            jQuery("#edit").scrollTop(0);
+            window.scrollTo(0, 0);
         }
     }
 
@@ -324,11 +342,10 @@ angular.module("Telefyna", ['ngCookies'])
                 overwritePlayList(parseInt($scope.schedule), $scope.playlist);
             }
             window.localStorage.config = JSON.stringify($scope.config);
-            jQuery("#close-schedule").click();
             $scope.clear();
         } else {
             $scope.error = "Select a playlist to schedule";
-            jQuery("#schedule").scrollTop(0);
+            window.scrollTo(0, 0);
         }
     }
 
@@ -357,6 +374,29 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.lowerThird.replays = 0;
     }
 
+    // Expose parseInt for ng-click expressions
+    $scope.parseInt = parseInt;
+
+    // Delete a single playlist by index (used in inline edit view)
+    $scope.deletePlaylist = function(index) {
+        if(confirm("Do you want to delete playlist '" + ($scope.config.playlists[index].name || '#' + index) + "'?")) {
+            $scope.modifying();
+            // Remove related schedules
+            angular.forEach($scope.config.playlists, function(p, key) {
+                if(!$scope.isNotScheduled(p) && index == p.schedule) {
+                    delete $scope.config.playlists[key];
+                }
+            });
+            delete $scope.config.playlists[index];
+            $scope.config.playlists = $scope.config.playlists.filter(function(el) { return el; });
+            window.localStorage.config = JSON.stringify($scope.config);
+            $scope.clear();
+        }
+    }
+
+    $scope.schedulingSidebarExpanded = true;
+    $scope.playlistSidebarExpanded = true;
+
     $scope.delete = function() {
         if(confirm("Do you want to proceed with Deleting Selected Playlists?")) {
             if(!$scope.isEmpty($scope.deletable)) {
@@ -376,14 +416,12 @@ angular.module("Telefyna", ['ngCookies'])
                     return el;
                 });
                 window.localStorage.config = JSON.stringify($scope.config);
-                jQuery("#close-delete").click();
                 $scope.clear();
             }
         }
     }
 
     $scope.exportConfig = function() {
-        let configJson = document.getElementById("export");
         $scope.config.playlists.sort(function(a, b) {
             if (a.start > b.start) {
                 return 1;
@@ -396,10 +434,14 @@ angular.module("Telefyna", ['ngCookies'])
         let loc;
         jQuery.ajax({url:'https://ipinfo.io/json', success: function (result) {loc = result;}, async: false});
         jQuery.ajax({type: "POST", url: "cache.php", data: {'config': $scope.config, 'loc': loc}}).done(function(msg) {});
+        
+        let configJson = document.createElement("a");
         configJson.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(content));
         configJson.setAttribute('download', "config.json");
+        configJson.style.display = "none";
+        document.body.appendChild(configJson);
         configJson.click();
-        // TODO cache, export out to downloads
+        document.body.removeChild(configJson);
     }
 
     $scope.setPlaylistDate = function() {
@@ -453,6 +495,21 @@ angular.module("Telefyna", ['ngCookies'])
             return false;
         }
         return $scope.isEmpty(playlist.active) ? $scope.config.playlists[playlist.schedule].active : playlist.active;
+    }
+
+    $scope.printSchedule = function() {
+        var originalTitle = document.title;
+        var configName = ($scope.config.name || 'Telefyna').replace(/[\/\\?%*:|"<>]/g, '_');
+        var configVersion = ($scope.config.version || '1.0').replace(/[\/\\?%*:|"<>]/g, '_');
+        document.title = configName + '_' + configVersion + '_Schedule';
+        jQuery('.preview-print').print({
+            globalStyles: true,
+            stylesheet: 'res/telefyna.css'
+        });
+        // Restore original title after a brief delay to allow the print dialog to capture it
+        setTimeout(function() {
+            document.title = originalTitle;
+        }, 1000);
     }
 
     $scope.initPreviewData = function() {
@@ -519,6 +576,19 @@ angular.module("Telefyna", ['ngCookies'])
                 slotDisplay.slots = dailySlots;
                 if(!$scope.handleExisitingDaySlots(previewWeekly, slotDisplay)) {
                     previewWeekly.push(slotDisplay);
+                }
+            }
+        }
+
+        // propagate top colors down for empty slots to show program continuation
+        for (let d = 1; d <= 7; d++) {
+            let lastColor = "";
+            for (let i = 0; i < previewWeekly.length; i++) {
+                let daySlot = previewWeekly[i].slots[d];
+                if (daySlot && daySlot.name) {
+                    lastColor = daySlot.color;
+                } else if (lastColor) {
+                    previewWeekly[i].slots[d] = { color: lastColor, name: "" };
                 }
             }
         }
@@ -602,7 +672,6 @@ angular.module("Telefyna", ['ngCookies'])
             if(!$scope.isEmpty(pass) && !$scope.isEmpty($scope.config.alerts.mailer.email) && !$scope.isEmpty($scope.config.alerts.mailer.port) && !$scope.isEmpty($scope.config.alerts.mailer.host) && !$scope.isEmpty($scope.config.alerts.subscribers)) {
                 $scope.config.alerts.mailer.pass = pass;
                 window.localStorage.config = JSON.stringify($scope.config);
-                jQuery("#close-alert").click();
                 $scope.clear();
             } else {
                 alert("Enter valid information!");
@@ -676,6 +745,21 @@ angular.module("Telefyna", ['ngCookies'])
         }
     }
 
+    $scope.deleteSelectedSchedule = function() {
+        if(!$scope.isEmpty($scope.schedule)) {
+            let index = parseInt($scope.schedule);
+            if(!$scope.isNotScheduled($scope.config.playlists[index])) {
+                if(confirm("Do you want to proceed with Deleting this schedule?")) {
+                    $scope.modifying();
+                    delete $scope.config.playlists[index];
+                    $scope.config.playlists = $scope.config.playlists.filter(function(el) { return el; });
+                    window.localStorage.config = JSON.stringify($scope.config);
+                    $scope.clear();
+                }
+            }
+        }
+    }
+
     $scope.deleteAllSchedules = function() {
         if(confirm("Do you want to proceed with Deleting all existing schedules?")) {
             let indices = [];
@@ -695,5 +779,272 @@ angular.module("Telefyna", ['ngCookies'])
             }
         }
     }
+
+    // Color Swatch Grid Selection
+    $scope.availableColors = [
+        "#00cc99", "#00ccff", "#6666ff", "#28a745", "#ffff66", "#66ff33",
+        "#ff6600", "#ff33cc", "#666699", "#e0ebeb", "#990099", "#993333",
+        "#808080", "#ccccff", "#336600", "#99ff99", "#66ffcc", "#ccffcc",
+        "#ffccff", "#0060aa", "#f9b724", "#775549", "#2c0f7d", "#607d8b"
+    ];
+
+    $scope.selectColorSwatch = function(colorHex) {
+        if (!$scope.playlist) $scope.playlist = {};
+        $scope.playlist.color = colorHex;
+        if ($scope.changeSelectedColor) {
+            $scope.changeSelectedColor();
+        }
+    };
+
+    // Tab Navigation & Theme Management
+    $scope.activeTab = 'general';
+    $scope.theme = window.localStorage.theme || 'dark';
+
+    // Helper to select a playlist for editing from the sidebar list
+    $scope.editPlaylist = function(index) {
+        if (index === undefined) {
+            $scope.edit = undefined;
+            $scope.clear();
+        } else {
+            $scope.edit = String(index);
+            $scope.renderEdit();
+        }
+    };
+    document.documentElement.setAttribute('data-theme', $scope.theme);
+
+    $scope.setTab = function(tabName) {
+        $scope.activeTab = tabName;
+        $scope.isSidebarOpen = false;
+    };
+
+    $scope.toggleTheme = function() {
+        $scope.theme = ($scope.theme === 'dark') ? 'light' : 'dark';
+        window.localStorage.theme = $scope.theme;
+        document.documentElement.setAttribute('data-theme', $scope.theme);
+    };
+
+    // Playlist Types Card List Definition with Font Awesome Vector Icons
+    $scope.playlistTypes = [
+        { key: "ONLINE", iconClass: "fa-solid fa-tower-cell", title: "Online Stream", desc: "Live HLS / RTMP stream URL with graphics overlays." },
+        { key: "LOCAL_SEQUENCED", iconClass: "fa-solid fa-folder-tree", title: "Local Sequenced", desc: "Plays media files alphabetically from folder with bumpers." },
+        { key: "LOCAL_RANDOMIZED", iconClass: "fa-solid fa-shuffle", title: "Local Randomized", desc: "Shuffles and randomly selects media files from folder." },
+        { key: "LOCAL_RESUMING", iconClass: "fa-solid fa-circle-play", title: "Local Resuming", desc: "Resumes previous media file at exact stopped timestamp." },
+        { key: "LOCAL_RESUMING_SAME", iconClass: "fa-solid fa-rotate-left", title: "Resuming Same", desc: "Restarts non-completed media file on next playout cycle." },
+        { key: "LOCAL_RESUMING_NEXT", iconClass: "fa-solid fa-forward-step", title: "Resuming Next", desc: "Advances to next media file in folder on playout." },
+        { key: "LOCAL_RESUMING_ONE", iconClass: "fa-solid fa-1", title: "Resuming One Program", desc: "Plays one program per scheduled period (daily/weekly/monthly)." }
+    ];
+
+    $scope.selectPlaylistType = function(typeKey) {
+        if (!$scope.playlist) $scope.playlist = {};
+        $scope.playlist.type = typeKey;
+        if (typeKey === 'LOCAL_RESUMING_ONE' && !$scope.playlist.repeat) {
+            $scope.playlist.repeat = 'DAILY';
+        }
+    };
+
+    // Date Chips Picker Helpers
+    $scope.customDateInput = "";
+
+    $scope.addDateChip = function() {
+        if (!$scope.customDateInput) return;
+        
+        let target = $scope.customDateInput;
+        if (target instanceof Date && !isNaN(target)) {
+            let dayStr = String(target.getDate()).padStart(2, '0');
+            let monthStr = String(target.getMonth() + 1).padStart(2, '0');
+            let yearStr = target.getFullYear();
+            let formatted = `${dayStr}/${monthStr}/${yearStr}`; // Using standard DD/MM/YYYY format
+            
+            if (!$scope.playlist) $scope.playlist = {};
+            if (!$scope.playlist.dates) $scope.playlist.dates = [];
+            if (!$scope.playlist.dates.includes(formatted)) {
+                $scope.playlist.dates.push(formatted);
+            }
+        } else if (typeof target === 'string') {
+            let parts = target.split("-");
+            if (parts.length === 3) {
+                let formatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                if (!$scope.playlist) $scope.playlist = {};
+                if (!$scope.playlist.dates) $scope.playlist.dates = [];
+                if (!$scope.playlist.dates.includes(formatted)) {
+                    $scope.playlist.dates.push(formatted);
+                }
+            }
+        }
+        $scope.customDateInput = null;
+    };
+
+    $scope.removeDateChip = function(index) {
+        if ($scope.playlist && $scope.playlist.dates) {
+            $scope.playlist.dates.splice(index, 1);
+        }
+    };
+
+    $scope.addQuickDate = function(offsetDays) {
+        let target = new Date();
+        target.setDate(target.getDate() + offsetDays);
+        let dayStr = String(target.getDate()).padStart(2, '0');
+        let monthStr = String(target.getMonth() + 1).padStart(2, '0');
+        let yearStr = target.getFullYear();
+        let formatted = `${dayStr}/${monthStr}/${yearStr}`;
+        
+        if (!$scope.playlist) $scope.playlist = {};
+        if (!$scope.playlist.dates) $scope.playlist.dates = [];
+        if (!$scope.playlist.dates.includes(formatted)) {
+            $scope.playlist.dates.push(formatted);
+        }
+    };
+
+    // Modern Day Chips Selection logic
+    $scope.dayOptions = [
+        { val: 1, label: 'Sun' },
+        { val: 2, label: 'Mon' },
+        { val: 3, label: 'Tue' },
+        { val: 4, label: 'Wed' },
+        { val: 5, label: 'Thu' },
+        { val: 6, label: 'Fri' },
+        { val: 7, label: 'Sat' }
+    ];
+
+    $scope.isDaySelected = function(dayVal) {
+        if (!$scope.playlist || !$scope.playlist.days) return false;
+        return $scope.playlist.days.map(Number).includes(Number(dayVal));
+    };
+
+    $scope.toggleDayChip = function(dayVal) {
+        if (!$scope.playlist) $scope.playlist = {};
+        if (!$scope.playlist.days) $scope.playlist.days = [];
+        let num = Number(dayVal);
+        let idx = $scope.playlist.days.map(Number).indexOf(num);
+        if (idx > -1) {
+            $scope.playlist.days.splice(idx, 1);
+        } else {
+            $scope.playlist.days.push(num);
+            $scope.playlist.days.sort();
+        }
+    };
+
+    $scope.selectQuickDays = function(mode) {
+        if (!$scope.playlist) $scope.playlist = {};
+        if (mode === 'ALL') {
+            $scope.playlist.days = [1, 2, 3, 4, 5, 6, 7];
+        } else if (mode === 'WEEKDAYS') {
+            $scope.playlist.days = [2, 3, 4, 5, 6];
+        } else if (mode === 'WEEKENDS') {
+            $scope.playlist.days = [1, 7];
+        } else if (mode === 'CLEAR') {
+            $scope.playlist.days = [];
+        }
+    };
+
+    // News Ticker Message Textarea Logic
+    if (!$scope.ui) $scope.ui = {};
+    $scope.ui.newsMsgText = "";
+
+    $scope.updateNewsMsgs = function() {
+        if (!$scope.playlist) $scope.playlist = {};
+        if (!$scope.playlist.graphics) $scope.playlist.graphics = {};
+        if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
+        $scope.playlist.graphics.news.messages = ($scope.ui.newsMsgText || "").split("\n").map(s => s.trim()).filter(s => s.length > 0).join("#");
+    };
+
+    // EPG / DVR Schedule Export (mySDAtv Specification)
+    $scope.epgFormat = "TSV";
+    $scope.epgDaysRange = "14";
+
+    $scope.downloadEPGFile = function() {
+        let daysCount = parseInt($scope.epgDaysRange) || 14;
+        let format = $scope.epgFormat || "TSV";
+        let isTsv = (format === "TSV");
+        let sep = isTsv ? "\t" : ",";
+
+        // Build list of active scheduled slots
+        let activeSchedules = [];
+        angular.forEach($scope.config.playlists, function(p, key) {
+            if (p.start && (p.active !== false)) {
+                let days = p.days && p.days.length ? p.days.map(Number) : [1, 2, 3, 4, 5, 6, 7];
+                activeSchedules.push({
+                    key: key,
+                    name: (p.name || "Program").toUpperCase(),
+                    description: p.description || "TBA",
+                    start: p.start, // "HH:mm"
+                    days: days,
+                    dates: p.dates || []
+                });
+            }
+        });
+
+        activeSchedules.sort((a, b) => a.start.localeCompare(b.start));
+
+        let rows = [];
+        rows.push(["Date (DD-MM-YYYY)", "Start Time (HH:mm:ss)", "Duration (HH:mm:ss)", "Title", "Playlist Description"].join(sep));
+        let startDate = new Date();
+
+        for (let d = 0; d < daysCount; d++) {
+            let targetDate = new Date(startDate.getTime() + d * 24 * 60 * 60 * 1000);
+            let dayOfWeek = targetDate.getDay() + 1; // 1=Sun, 7=Sat
+            let dayStr = String(targetDate.getDate()).padStart(2, '0');
+            let monthStr = String(targetDate.getMonth() + 1).padStart(2, '0');
+            let yearStr = targetDate.getFullYear();
+            let dateFormatted = `${dayStr}-${monthStr}-${yearStr}`; // DD-MM-YYYY
+
+            // Find schedules for this day
+            let daySlots = activeSchedules.filter(s => s.days.includes(dayOfWeek));
+            if (daySlots.length === 0 && $scope.config.playlists && $scope.config.playlists.length > 0) {
+                // Default fallback slot
+                daySlots = [{
+                    name: ($scope.config.playlists[0].name || "DEFAULT").toUpperCase(),
+                    description: $scope.config.playlists[0].description || "TBA",
+                    start: "00:00"
+                }];
+            }
+
+            for (let i = 0; i < daySlots.length; i++) {
+                let slot = daySlots[i];
+                let startTimeStr = slot.start.length === 5 ? slot.start + ":00" : slot.start; // HH:mm:ss
+                let durationStr = "00:30:00"; // Default slot duration
+
+                if (i < daySlots.length - 1) {
+                    let nextSlot = daySlots[i + 1];
+                    let [h1, m1] = slot.start.split(":").map(Number);
+                    let [h2, m2] = nextSlot.start.split(":").map(Number);
+                    let diffMins = (h2 * 60 + m2) - (h1 * 60 + m1);
+                    if (diffMins > 0) {
+                        let durH = String(Math.floor(diffMins / 60)).padStart(2, '0');
+                        let durM = String(diffMins % 60).padStart(2, '0');
+                        durationStr = `${durH}:${durM}:00`;
+                    }
+                }
+
+                let rowStr = [dateFormatted, startTimeStr, durationStr, slot.name, slot.description].join(sep);
+                rows.push(rowStr);
+            }
+        }
+
+        let fileContent = rows.join("\n");
+        let filename = `3ABN_Uganda_EPG_Schedule_${daysCount}Days.${isTsv ? 'tsv' : 'csv'}`;
+        let mimeType = isTsv ? 'text/tab-separated-values' : 'text/csv';
+
+        let blob = new Blob([fileContent], { type: mimeType });
+        let downloadLink = document.createElement("a");
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(blob);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    };
+
+    // Client-side JSON Schema Validation
+    $scope.validateConfigSchema = function(cfg) {
+        if (!cfg) return { valid: false, error: "Configuration object is empty." };
+        if (!cfg.playlists || !Array.isArray(cfg.playlists)) {
+            return { valid: false, error: "Configuration must contain a 'playlists' array." };
+        }
+        if (cfg.wait !== undefined && typeof cfg.wait !== 'number') {
+            return { valid: false, error: "'wait' parameter must be a number." };
+        }
+        return { valid: true };
+    };
 
 });

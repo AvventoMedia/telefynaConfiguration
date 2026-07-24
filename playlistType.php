@@ -1,21 +1,31 @@
-<div ng-if="!isEmpty(playlist.type)">{{getPlaylistTypeDesc(playlist.type)}}</div>
-<div class="section action">* Type *
-	<select class="form-control multiselect-ui" ng-model="playlist.type" required>
-		<option value="ONLINE">Online Stream</option>
-		<option value="LOCAL_SEQUENCED">Local sequenced folder</option>
-		<option value="LOCAL_RANDOMIZED">Local random folder</option>
-		<option value="LOCAL_RESUMING">Local resuming folder</option>
-		<option value="LOCAL_RESUMING_SAME">Local same resuming folder</option>
-		<option value="LOCAL_RESUMING_NEXT">Local next resuming folder</option>
-		<option value="LOCAL_RESUMING_ONE">Local one program per resuming period folder</option>
-	</select>
+<div class="mb-3">
+	<label class="form-label fw-bold mb-2">Select Playlist Type</label>
+	<div class="playlist-type-grid">
+		<div ng-repeat="t in playlistTypes" 
+		     class="type-card" 
+		     ng-class="{'type-card-active': playlist.type === t.key}" 
+		     ng-click="selectPlaylistType(t.key)">
+			<div class="radio-indicator">
+				<div class="radio-dot" ng-if="playlist.type === t.key"></div>
+			</div>
+			<div class="type-card-icon"><i class="{{t.iconClass}}"></i></div>
+			<div class="type-card-content">
+				<div class="type-card-title">{{t.title}}</div>
+				<div class="type-card-desc">{{t.desc}}</div>
+			</div>
+		</div>
+	</div>
 </div>
-<div class="section action" ng-if="playlist.type == 'LOCAL_RESUMING_ONE'">Resuming Period
-	<select class="form-control multiselect-ui" ng-model="playlist.repeat" required>
-		<option value="DAILY">Daily</option>
-		<option value="WEEKLY">Weekly</option>
-		<option value="MONTHLY">Monthly</option>
-		<option value="QUARTERLY">Quartely</option>
-		<option value="ANNUALLY">Annually</option>
-	</select>
+
+<div class="card p-3 mb-3 border-0" ng-if="playlist.type == 'LOCAL_RESUMING_ONE'">
+	<label class="form-label fw-bold mb-2">Resuming Frequency Period</label>
+	<div class="d-flex flex-wrap gap-2">
+		<button type="button" 
+		        ng-repeat="p in ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'ANNUALLY']" 
+		        class="btn mr-2 mb-2" 
+		        ng-class="playlist.repeat === p ? 'btn-primary font-weight-bold' : 'btn-outline-secondary'" 
+		        ng-click="playlist.repeat = p">
+			{{p}}
+		</button>
+	</div>
 </div>

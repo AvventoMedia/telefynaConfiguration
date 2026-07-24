@@ -1,75 +1,94 @@
-<button class="btn btn-info" data-target="#alerts" data-toggle="modal" type="button">Email Alerts</button>
-<div class="modal fade action-content" id="alerts" role="dialog">
-	<div class="modal-dialog modal-dialog-centered" role="document">
-		<form class="modal-content" ng-submit="addMailerPassword()">
-			<div class="modal-header">
-			    <h5 class="modal-title">Email alerts</h5>
-			</div>
-			<div class="modal-body">
-			    <div class="section action">
-			        <label class="checkbox-inline"><input ng-model="config.alerts.enabled" type="checkbox"> Enabled</label>
-			    </div>
-                <div class="section action">
-                    <b>Sender</b><br>
-                    Host
-                    <input class="form-control flex-wrap" required ng-model="config.alerts.mailer.host" type="text" ng-change="modifying()">
-                    Port
-                    <input class="form-control flex-wrap" required ng-model="config.alerts.mailer.port" type="number" ng-change="modifying()">
-                    Email Address
-                    <input class="form-control flex-wrap" required ng-model="config.alerts.mailer.email" type="text" ng-change="modifying()">
-                    Email Password
-                    <input class="form-control flex-wrap" id="pswd" required type="password">
-                </div>
-                <div class="section action table-responsive">
-                    <b>Receivers</b>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th scope="col">Delete</th>
-                                <th scope="col">Role</th>
-                                <th scope="col">Attach config</th>
-                                <th scope="col">Days logs to attach</th>
-                                <th scope="col">Emails separated by #</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td></td>
-                                <td>
-                                    <select class="form-control multiselect-ui" ng-model="alert.eventCategory">
-										<option value="ADMIN">Administrator</option>
-										<option value="BROADCAST">Broadcaster</option>
-									</select>
-                                </td>
-                                <td>
-                                    <input ng-model="alert.attachConfig" type="checkbox" ng-disabled="isEmpty(alert.eventCategory) || alert.eventCategory != 'ADMIN'">
-                                </td>
-                                <td>
-                                    <input ng-model="alert.attachAuditLog" type="number" ng-disabled="isEmpty(alert.eventCategory) || alert.eventCategory != 'ADMIN'">
-                                </td>
-                                <td>
-                                    <input ng-model="alert.emails" type="text">
-                                </td>
-                            </tr>
-                            <tr ng-repeat="(k, s) in config.alerts.subscribers">
-                                <td>
-                                    <input class="receiver" value="{{k}}" type="checkbox">
-                                </td>
-                                <td>{{s.eventCategory}}</td>
-                                <td>{{s.attachConfig}}</td>
-                                <td>{{s.attachAuditLog}}</td>
-                                <td>{{s.emails}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-			</div>
-			<div class="modal-footer">
-				<button class="btn btn-danger" id="close-alert" data-dismiss="modal"	ng-click="clear()" type="button">Cancel</button>
-				<button class="btn btn-danger" type="button" ng-disabled="isEmpty(config.alerts.subscribers)" ng-click="deleteReceivers()">Delete Selected Receivers</button>
-                <button class="btn btn-success"  type="button" ng-disabled="isEmpty(alert.emails) || isEmpty(alert.attachConfig) || isEmpty(alert.attachAuditLog) || isEmpty(alert.eventCategory) || invalidSubScriber()" ng-click="addAlert()">Add Receiver</button>
-				<button class="btn btn-success" type="submit" ng-disabled="isEmpty(config.alerts.subscribers)" >Save</button>
-			</div>
-		</form>
+<form ng-submit="addMailerPassword()">
+	<div class="card p-3 mb-3 border-0">
+		<div class="form-check form-switch">
+			<input class="form-check-input" ng-model="config.alerts.enabled" type="checkbox" id="chkAlerts">
+			<label class="form-check-label font-weight-bold" for="chkAlerts">Enable Automated Email Alerts</label>
+		</div>
 	</div>
-</div>
+	
+	<div class="card p-3 mb-3 border-0">
+		<h6 class="font-weight-bold mb-3"><i class="fa-solid fa-paper-plane me-2 text-primary"></i>SMTP Sender Configuration</h6>
+		<div class="row">
+			<div class="col-md-6 mb-3">
+				<label class="form-label">SMTP Host</label>
+				<input class="form-control" required ng-model="config.alerts.mailer.host" placeholder="smtp.gmail.com" type="text" ng-change="modifying()">
+			</div>
+			<div class="col-md-6 mb-3">
+				<label class="form-label">SMTP Port</label>
+				<input class="form-control" required ng-model="config.alerts.mailer.port" placeholder="587" type="number" ng-change="modifying()">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6 mb-3">
+				<label class="form-label">Sender Email Address</label>
+				<input class="form-control" required ng-model="config.alerts.mailer.email" placeholder="apps@avventohome.org" type="text" ng-change="modifying()">
+			</div>
+			<div class="col-md-6 mb-3">
+				<label class="form-label">Sender Email Password</label>
+				<input class="form-control" id="pswd" required type="password">
+			</div>
+		</div>
+	</div>
+	
+	<div class="card p-3 border-0 table-responsive mb-4">
+		<h6 class="font-weight-bold mb-3"><i class="fa-solid fa-users me-2 text-primary"></i>Alert Receivers</h6>
+		<table class="table table-striped align-middle">
+			<thead>
+				<tr>
+					<th scope="col">Select</th>
+					<th scope="col">Role</th>
+					<th scope="col">Attach Config</th>
+					<th scope="col">Log Days</th>
+					<th scope="col">Receiver Email(s)</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- Add Receiver Row -->
+				<tr class="table-primary">
+					<td></td>
+					<td>
+						<select class="form-select form-select-sm" ng-model="alert.eventCategory">
+							<option value="ADMIN">Administrator</option>
+							<option value="BROADCAST">Broadcaster</option>
+						</select>
+					</td>
+					<td class="text-center">
+						<input class="form-check-input" ng-model="alert.attachConfig" type="checkbox" ng-disabled="isEmpty(alert.eventCategory) || alert.eventCategory != 'ADMIN'">
+					</td>
+					<td>
+						<input class="form-control form-control-sm" ng-model="alert.attachAuditLog" type="number" ng-disabled="isEmpty(alert.eventCategory) || alert.eventCategory != 'ADMIN'">
+					</td>
+					<td>
+						<input class="form-control form-control-sm" ng-model="alert.emails" placeholder="email1@domain.com, email2@domain.com" type="text">
+					</td>
+				</tr>
+				<!-- Display Receivers -->
+				<tr ng-repeat="(k, s) in config.alerts.subscribers">
+					<td>
+						<input class="receiver form-check-input" value="{{k}}" type="checkbox">
+					</td>
+					<td><span class="badge bg-secondary">{{s.eventCategory}}</span></td>
+					<td class="text-center">
+						<i class="fa-solid" ng-class="s.attachConfig ? 'fa-check text-success' : 'fa-xmark text-danger'"></i>
+					</td>
+					<td>{{s.attachAuditLog}}</td>
+					<td><span class="font-monospace small">{{s.emails}}</span></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="d-flex justify-content-between border-top pt-4 mt-2">
+		<button class="btn btn-outline-danger" type="button" ng-disabled="isEmpty(config.alerts.subscribers)" ng-click="deleteReceivers()">
+			<i class="fa-solid fa-trash me-1"></i> Delete Selected
+		</button>
+		<div class="d-flex gap-2">
+			<button class="btn btn-primary" type="button" ng-disabled="isEmpty(alert.emails) || isEmpty(alert.attachConfig) || isEmpty(alert.attachAuditLog) || isEmpty(alert.eventCategory) || invalidSubScriber()" ng-click="addAlert()">
+				<i class="fa-solid fa-user-plus me-1"></i> Add Receiver
+			</button>
+			<button class="btn btn-success px-4" type="submit" ng-disabled="isEmpty(config.alerts.subscribers)">
+				<i class="fa-solid fa-floppy-disk me-1"></i> Save Settings
+			</button>
+		</div>
+	</div>
+</form>
