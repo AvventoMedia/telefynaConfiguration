@@ -963,10 +963,13 @@ angular.module("Telefyna", ['ngCookies'])
         angular.forEach($scope.config.playlists, function(p, key) {
             if (p.start && (p.active !== false)) {
                 let days = p.days && p.days.length ? p.days.map(Number) : [1, 2, 3, 4, 5, 6, 7];
+                let rawPlaylist = !$scope.isNotScheduled(p) ? $scope.config.playlists[p.schedule] : p;
+                let desc = p.description || (rawPlaylist ? rawPlaylist.description : null) || "TBA";
+                
                 activeSchedules.push({
                     key: key,
-                    name: (p.name || "Program").toUpperCase(),
-                    description: p.description || "TBA",
+                    name: (p.name || (rawPlaylist ? rawPlaylist.name : "Program")).toUpperCase(),
+                    description: desc,
                     start: p.start, // "HH:mm"
                     days: days,
                     dates: p.dates || []
