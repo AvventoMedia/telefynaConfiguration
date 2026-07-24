@@ -578,20 +578,20 @@
             </div>
         </section>
 
-    </main>
+        <!-- Footer -->
+        <footer class="app-footer text-center py-4 mt-4 border-top">
+            <div class="container">
+                <p class="mb-1">
+                    &copy; 2026 AvventoMedia. All rights reserved. |
+                    <a href="https://avventomedia.org/terms" target="_blank" rel="noopener noreferrer">Terms of Use</a> |
+                    <a href="https://avventomedia.org/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+                </p>
+                <p class="mb-1 fst-italic opacity-75">Flying the Gospel to the Whole World</p>
+                <p class="mb-0 small opacity-50">Built with purpose for ministry.</p>
+            </div>
+        </footer>
 
-    <!-- Footer -->
-    <footer class="app-footer text-center py-4 mt-4 border-top">
-        <div class="container">
-            <p class="mb-1">
-                &copy; 2026 AvventoMedia. All rights reserved. |
-                <a href="https://avventomedia.org/terms" target="_blank" rel="noopener noreferrer">Terms of Use</a> |
-                <a href="https://avventomedia.org/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
-            </p>
-            <p class="mb-1 fst-italic opacity-75">Flying the Gospel to the Whole World</p>
-            <p class="mb-0 small opacity-50">Built with purpose for ministry.</p>
-        </div>
-    </footer>
+    </main>
 
 </body>
 </html>
