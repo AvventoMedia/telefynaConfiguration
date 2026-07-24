@@ -205,6 +205,85 @@ angular.module("Telefyna", ['ngCookies'])
         return $scope.config.playlists.filter(function(p) { return !$scope.isNotScheduled(p); }).length;
     };
 
+    $scope.getScheduledDaysText = function(p, k) {
+        if (!p) return "";
+        let daysArray = [];
+
+        if (!$scope.isEmpty(p.days)) {
+            daysArray = p.days.map(Number);
+        } else if ($scope.isNotScheduled(p) && $scope.config && $scope.config.playlists) {
+            angular.forEach($scope.config.playlists, function(s) {
+                if (!$scope.isNotScheduled(s) && (s.schedule == k || s.schedule === String(k))) {
+                    if (!$scope.isEmpty(s.days)) {
+                        s.days.forEach(function(d) {
+                            let num = Number(d);
+                            if (!daysArray.includes(num)) daysArray.push(num);
+                        });
+                    }
+                }
+            });
+        }
+
+        if (daysArray.length === 0) {
+            let hasStartTime = p.start;
+            if (!hasStartTime && $scope.isNotScheduled(p) && $scope.config && $scope.config.playlists) {
+                angular.forEach($scope.config.playlists, function(s) {
+                    if (!$scope.isNotScheduled(s) && (s.schedule == k || s.schedule === String(k))) {
+                        if (s.start) hasStartTime = true;
+                    }
+                });
+            }
+            if (hasStartTime) return "Daily";
+            return "";
+        }
+
+        daysArray.sort(function(a, b) { return a - b; });
+
+        if (daysArray.length === 7) return "Daily";
+        if (daysArray.length === 5 && daysArray.join(',') === "2,3,4,5,6") return "Mon-Fri";
+        if (daysArray.length === 2 && daysArray.join(',') === "1,7") return "Sun, Sat";
+
+        const dayLabels = { 1: 'Sun', 2: 'Mon', 3: 'Tue', 4: 'Wed', 5: 'Thu', 6: 'Fri', 7: 'Sat' };
+        return daysArray.map(function(d) { return dayLabels[d] || d; }).join(', ');
+    };
+
+    $scope.getScheduledDatesText = function(p, k) {
+        if (!p) return "";
+        let datesArray = [];
+
+        if (!$scope.isEmpty(p.dates)) {
+            datesArray = angular.copy(p.dates);
+        } else if ($scope.isNotScheduled(p) && $scope.config && $scope.config.playlists) {
+            angular.forEach($scope.config.playlists, function(s) {
+                if (!$scope.isNotScheduled(s) && (s.schedule == k || s.schedule === String(k))) {
+                    if (!$scope.isEmpty(s.dates)) {
+                        s.dates.forEach(function(d) {
+                            if (!datesArray.includes(d)) datesArray.push(d);
+                        });
+                    }
+                }
+            });
+        }
+
+        if (datesArray.length === 0) return "";
+        if (datesArray.length <= 2) return datesArray.join(', ');
+        return datesArray.length + ' date(s)';
+    };
+
+    $scope.getScheduledStartTime = function(p, k) {
+        if (!p) return "";
+        if (p.start) return p.start;
+        let startTime = "";
+        if ($scope.isNotScheduled(p) && $scope.config && $scope.config.playlists) {
+            angular.forEach($scope.config.playlists, function(s) {
+                if (!$scope.isNotScheduled(s) && (s.schedule == k || s.schedule === String(k))) {
+                    if (s.start && !startTime) startTime = s.start;
+                }
+            });
+        }
+        return startTime;
+    };
+
     $scope.schedulePlaylist = function(index) {
         $scope.schedule = String(index);
         $scope.renderScheduling();

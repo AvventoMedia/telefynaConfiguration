@@ -254,9 +254,9 @@
                                         <div class="overflow-hidden w-100 pe-2">
                                             <div class="fw-bold text-truncate">{{getPlaylistName(k)}} <span class="opacity-75 small fw-normal">#{{k+1}}</span></div>
                                             <div class="d-flex flex-wrap gap-1 mt-1">
-                                                <span class="badge bg-secondary" ng-if="!isEmpty(p.start)" style="font-size: 0.65rem; opacity:0.85"><i class="fa-regular fa-clock me-1"></i>{{p.start}}</span>
-                                                <span class="badge bg-secondary" ng-if="!isEmpty(p.days)" style="font-size: 0.65rem; opacity:0.85"><i class="fa-regular fa-calendar-days me-1"></i>{{p.days.length}}d</span>
-                                                <span class="badge bg-secondary" ng-if="!isEmpty(p.dates)" style="font-size: 0.65rem; opacity:0.85"><i class="fa-solid fa-calendar me-1"></i>{{p.dates.length}}d</span>
+                                                <span class="badge bg-secondary" ng-if="!isEmpty(getScheduledStartTime(p, k))" style="font-size: 0.65rem; opacity:0.85"><i class="fa-regular fa-clock me-1"></i>{{getScheduledStartTime(p, k)}}</span>
+                                                <span class="badge bg-primary" ng-if="!isEmpty(getScheduledDaysText(p, k))" style="font-size: 0.65rem;"><i class="fa-regular fa-calendar-days me-1"></i>{{getScheduledDaysText(p, k)}}</span>
+                                                <span class="badge bg-info" ng-if="!isEmpty(getScheduledDatesText(p, k))" style="font-size: 0.65rem;"><i class="fa-solid fa-calendar me-1"></i>{{getScheduledDatesText(p, k)}}</span>
                                                 <span class="badge bg-secondary" ng-if="p.graphics.displayRepeatWatermark" style="font-size: 0.65rem; opacity:0.85"><i class="fa-solid fa-repeat"></i></span>
                                             </div>
                                         </div>
@@ -279,7 +279,11 @@
                             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
                                 <h5 class="fw-bold m-0 text-truncate">
                                     <i class="fa-solid fa-calendar-check me-2" style="color:var(--accent-purple)"></i>
-                                    Schedule: {{!isEmpty(schedule) ? getPlaylistName(schedule) : 'Select a Playlist...'}} <span ng-if="!isEmpty(schedule)" class="badge bg-secondary ms-2" style="font-size: 0.5em; vertical-align: middle;">#{{(schedule*1)+1}}</span>
+                                    Schedule: {{!isEmpty(schedule) ? getPlaylistName(schedule) : 'Select a Playlist...'}} 
+                                    <span ng-if="!isEmpty(schedule)" class="badge bg-secondary ms-2" style="font-size: 0.5em; vertical-align: middle;">#{{(schedule*1)+1}}</span>
+                                    <span ng-if="!isEmpty(schedule) && !isEmpty(getScheduledDaysText(config.playlists[schedule], schedule))" class="badge bg-primary ms-1" style="font-size: 0.5em; vertical-align: middle;">
+                                        <i class="fa-regular fa-calendar-days me-1"></i>{{getScheduledDaysText(config.playlists[schedule], schedule)}}
+                                    </span>
                                 </h5>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" ng-model="playlist.active" type="checkbox" id="chkSchedActive">
