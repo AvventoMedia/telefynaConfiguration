@@ -586,7 +586,7 @@
         <footer class="app-footer text-center py-4 mt-auto border-top">
             <div class="container">
                 <p class="mb-1">
-                    &copy; 2026 AvventoMedia. All rights reserved. |
+                    &copy; <?php echo date('Y'); ?> AvventoMedia. All rights reserved. |
                     <a href="https://avventomedia.org/terms" target="_blank" rel="noopener noreferrer">Terms of Use</a> |
                     <a href="https://avventomedia.org/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
                 </p>
