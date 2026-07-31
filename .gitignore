@@ -1,5 +1,6 @@
 # Sensitive data
 config.json
+exports/
 *.p12
 *.pem
 

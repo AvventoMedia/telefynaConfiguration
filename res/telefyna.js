@@ -74,8 +74,10 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.playlist.graphics.displayRepeatWatermark = false;
         $scope.playlist.graphics.displayLiveLogo = false;
         $scope.playlist.graphics.news = {};
+        $scope.playlist.graphics.news.starts = "";
         $scope.playlist.graphics.news.replays = 0;
         $scope.playlist.graphics.news.speed = "FAST";
+        $scope.playlist.graphics.news.messages = "";
         $scope.playlist.graphics.lowerThirds = [];
         $scope.lowerThird = {};
         $scope.lowerThird.replays = 0;
@@ -277,10 +279,11 @@ angular.module("Telefyna", ['ngCookies'])
                 $scope.error = "Stream URL Or Local folder name should be set to folder name not URL";
                 window.scrollTo(0, 0);
             } else {
+                $scope.updateNewsMsgs();
                 $scope.modifying();
                 $scope.verifyPlaylist();
                 if(!$scope.isEmpty(!$scope.error)) {
-                    $scope.config.playlists.push($scope.playlist);
+                    $scope.config.playlists.push(angular.copy($scope.playlist));
                     $scope.clear();
                 } else {
                     window.scrollTo(0, 0);
@@ -306,6 +309,9 @@ angular.module("Telefyna", ['ngCookies'])
         if($scope.isEmpty($scope.playlist.graphics)) {
             clearGraphics();
         }
+        if (!$scope.playlist.graphics) $scope.playlist.graphics = {};
+        if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
+        if (!$scope.playlist.graphics.lowerThirds) $scope.playlist.graphics.lowerThirds = [];
         if (!$scope.ui) $scope.ui = {};
         $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("#").join("\n") : "";
     }
@@ -322,10 +328,11 @@ angular.module("Telefyna", ['ngCookies'])
                 $scope.playlist.urlOrFolder = $scope.config.playlists[parseInt($scope.edit)].urlOrFolder;
             } else {
                 if(!$scope.isEmpty($scope.edit)) {
+                    $scope.updateNewsMsgs();
                     $scope.modifying();
-                    overwritePlayList(parseInt($scope.edit), $scope.playlist);
+                    overwritePlayList(parseInt($scope.edit), angular.copy($scope.playlist));
                     if(!$scope.isEmpty($scope.overrideSchedules)) {
-                        overwriteSchedules(parseInt($scope.edit), $scope.playlist);
+                        overwriteSchedules(parseInt($scope.edit), angular.copy($scope.playlist));
                     }
                     window.localStorage.config = JSON.stringify($scope.config);
                     $scope.clear();
@@ -352,6 +359,12 @@ angular.module("Telefyna", ['ngCookies'])
             if($scope.isEmpty($scope.playlist.graphics)) {
                 clearGraphics();
             }
+            if (!$scope.playlist.graphics) $scope.playlist.graphics = {};
+            if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
+            if (!$scope.playlist.graphics.lowerThirds) $scope.playlist.graphics.lowerThirds = [];
+            if (!$scope.ui) $scope.ui = {};
+            $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("#").join("\n") : "";
+
             $scope.playlist.active = playlistActive($scope.playlist);
             // add _type_ property to playlist to determine playlist type in scheduling modal
             $scope.playlist.type = $scope.getPlaylistType(parseInt($scope.schedule));
@@ -368,19 +381,20 @@ angular.module("Telefyna", ['ngCookies'])
             playlist.days = playlistWithSchedule.days.map(x=>+x);
         }
         playlist.dates = playlistWithSchedule.dates;
-        playlist.graphics = playlistWithSchedule.graphics;
+        playlist.graphics = angular.copy(playlistWithSchedule.graphics) || {};
         return playlist;
     }
 
     $scope.scheduling = function() {
         if(!$scope.isEmpty($scope.schedule)) {// schedule is set
+            $scope.updateNewsMsgs();
             $scope.modifying();
             // todo add or revise
             if($scope.isNotScheduled($scope.config.playlists[parseInt($scope.schedule)])) {// new
-                $scope.playlist.schedule = $scope.schedule;
-                $scope.config.playlists.push($scope.playlist);
+                $scope.playlist.schedule = parseInt($scope.schedule);
+                $scope.config.playlists.push(angular.copy($scope.playlist));
             } else {// edit
-                overwritePlayList(parseInt($scope.schedule), $scope.playlist);
+                overwritePlayList(parseInt($scope.schedule), angular.copy($scope.playlist));
             }
             window.localStorage.config = JSON.stringify($scope.config);
             $scope.clear();
@@ -520,7 +534,7 @@ angular.module("Telefyna", ['ngCookies'])
                 $scope.config.playlists[k].name = playlist.name;
                 $scope.config.playlists[k].color = playlist.color;
                 $scope.config.playlists[k].seekTo = playlist.seekTo;
-                $scope.config.playlists[k].graphics = playlist.graphics;
+                $scope.config.playlists[k].graphics = angular.copy(playlist.graphics);
             }
         });
     }
@@ -986,7 +1000,7 @@ angular.module("Telefyna", ['ngCookies'])
         if (!$scope.playlist) $scope.playlist = {};
         if (!$scope.playlist.graphics) $scope.playlist.graphics = {};
         if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
-        $scope.playlist.graphics.news.messages = ($scope.ui.newsMsgText || "").split("\n").map(s => s.trim()).filter(s => s.length > 0).join("#");
+        $scope.playlist.graphics.news.messages = ($scope.ui && $scope.ui.newsMsgText ? $scope.ui.newsMsgText : "").split("\n").map(s => s.trim()).filter(s => s.length > 0).join("#");
     };
 
     // EPG / DVR Schedule Export (mySDAtv Specification)
