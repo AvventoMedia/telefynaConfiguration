@@ -45,7 +45,7 @@
 	<div class="row">
 		<div class="col-md-12 mb-2">
 			<label class="form-label small font-weight-bold">Start Minute</label>
-			<input class="form-control" ng-model="playlist.graphics.news.starts" type="text" placeholder="e.g. 0">
+			<input class="form-control" ng-model="playlist.graphics.news.startMinute" type="number" step="any" placeholder="e.g. 0">
 		</div>
 	</div>
 </div>

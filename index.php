@@ -338,7 +338,7 @@
                         <label class="form-label fw-bold mb-2">Broadcast Start Time (HH:mm)</label>
                         <div class="row align-items-center">
                             <div class="col-md-4 mb-2">
-                                <input class="form-control form-control-lg text-center font-weight-bold" ng-model="playlist.start" required type="text" placeholder="e.g. 08:00">
+                                <input class="form-control form-control-lg text-center font-weight-bold" ng-model="playlist.start" required type="time" string-to-time>
                             </div>
                             <div class="col-md-8 mb-2">
                                 <div class="d-flex flex-wrap gap-1">
@@ -390,6 +390,11 @@
             <div class="card p-4 preview-print" ng-init="ui = {gridZoom: 1}">
                 <div class="d-flex align-items-center justify-content-between mb-3 d-print-none" ng-if="!isEmpty(previewData.weekly)">
                     <div class="d-flex align-items-center">
+                        <label class="form-label mb-0 me-2 fw-bold text-secondary"><i class="fa-solid fa-clock me-1"></i>Format:</label>
+                        <div class="form-check form-switch me-4 mb-0">
+                            <input class="form-check-input" type="checkbox" id="timeFormatSwitch" ng-model="ui.use12HourFormat">
+                            <label class="form-check-label fw-bold text-secondary" for="timeFormatSwitch">12-Hour</label>
+                        </div>
                         <label class="form-label mb-0 me-2 fw-bold text-secondary"><i class="fa-solid fa-magnifying-glass me-1"></i>Zoom:</label>
                         <input type="range" class="form-range" style="width: 150px;" min="0.4" max="1.5" step="0.1" ng-model="ui.gridZoom">
                         <span class="ms-2 fw-bold text-secondary">{{(ui.gridZoom * 100) | number:0}}%</span>
@@ -431,7 +436,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="(key, program) in previewData.weekly">
-                                <td class="fw-bold">{{program.start}}</td>
+                                <td class="fw-bold">{{formatTime(program.start)}}</td>
                                 <td style="background-color:{{program.slots[1].color}} !important; color:#000000;">{{program.slots[1].name}} <span class="badge bg-danger ms-1" ng-if="program.slots[1].hasRepeat" style="font-size: 0.6rem; vertical-align: middle;" title="Repeat Program"><i class="fa-solid fa-repeat"></i></span></td>
                                 <td style="background-color:{{program.slots[2].color}} !important; color:#000000;">{{program.slots[2].name}} <span class="badge bg-danger ms-1" ng-if="program.slots[2].hasRepeat" style="font-size: 0.6rem; vertical-align: middle;" title="Repeat Program"><i class="fa-solid fa-repeat"></i></span></td>
                                 <td style="background-color:{{program.slots[3].color}} !important; color:#000000;">{{program.slots[3].name}} <span class="badge bg-danger ms-1" ng-if="program.slots[3].hasRepeat" style="font-size: 0.6rem; vertical-align: middle;" title="Repeat Program"><i class="fa-solid fa-repeat"></i></span></td>
@@ -456,7 +461,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="program in previewData.dated">
-                                <td>{{program.at}}</td>
+                                <td>{{formatTime(program.at)}}</td>
                                 <td style="background-color:{{program.color}} !important; color:#000000;">{{program.name}} <span class="badge bg-danger ms-1" ng-if="program.hasRepeat" style="font-size: 0.6rem; vertical-align: middle;" title="Repeat Program"><i class="fa-solid fa-repeat"></i></span></td>
                             </tr>
                         </tbody>

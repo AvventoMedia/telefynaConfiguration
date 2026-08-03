@@ -36,6 +36,29 @@ angular.module("Telefyna", ['ngCookies'])
         }
     };
 }])
+.directive('stringToTime', function() {
+    return {
+        require: 'ngModel',
+        link: function(scope, element, attrs, ngModel) {
+            ngModel.$formatters.push(function(value) {
+                if (value) {
+                    var parts = value.split(':');
+                    var d = new Date(1970, 0, 1, parts[0] || 0, parts[1] || 0);
+                    return d;
+                }
+                return null;
+            });
+            ngModel.$parsers.push(function(value) {
+                if (value && angular.isDate(value)) {
+                    var h = value.getHours();
+                    var m = value.getMinutes();
+                    return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+                }
+                return value || null;
+            });
+        }
+    };
+})
 .controller('Config', function($cookies, $scope) {
     $scope.currentYear = new Date().getFullYear();
     if(!isEmptyInternal(window.localStorage.config)) {
@@ -74,7 +97,7 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.playlist.graphics.displayRepeatWatermark = false;
         $scope.playlist.graphics.displayLiveLogo = false;
         $scope.playlist.graphics.news = {};
-        $scope.playlist.graphics.news.starts = "";
+        $scope.playlist.graphics.news.startMinute = 0.0;
         $scope.playlist.graphics.news.messages = "";
         $scope.playlist.graphics.lowerThirds = [];
         $scope.lowerThird = {};
@@ -97,6 +120,7 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.schedule = undefined;
         if (!$scope.ui) $scope.ui = {};
         $scope.ui.newsMsgText = "";
+        $scope.ui.use12HourFormat = true;
         $scope.deletable = [];
         $scope.alert = {};
         $scope.alert.attachConfig = false;
@@ -110,6 +134,28 @@ angular.module("Telefyna", ['ngCookies'])
     $scope.isEmpty = function(obj) {
         return isEmptyInternal(obj);
     }
+
+    $scope.formatTime = function(timeStr) {
+        if (!$scope.ui || !$scope.ui.use12HourFormat) return timeStr;
+        if (!timeStr || typeof timeStr !== 'string') return timeStr;
+        
+        // timeStr could be "16:00" or "DD-MM-YYYY 16:00"
+        let parts = timeStr.split(" ");
+        let timePart = parts.length > 1 ? parts[1] : parts[0];
+        let datePart = parts.length > 1 ? parts[0] + " " : "";
+
+        let timeSplit = timePart.split(":");
+        if (timeSplit.length < 2) return timeStr;
+
+        let hour = parseInt(timeSplit[0], 10);
+        let min = timeSplit[1];
+        let ampm = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12;
+        hour = hour ? hour : 12; // the hour '0' should be '12'
+        let hourStr = hour < 10 ? '0' + hour : hour;
+        
+        return datePart + hourStr + ':' + min + ' ' + ampm;
+    };
 
     $scope.clear = function() {
         clearInternal();

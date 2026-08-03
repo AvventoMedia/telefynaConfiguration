@@ -249,6 +249,12 @@ body {
   opacity: 0.7;
 }
 
+[data-theme="light"] .form-control::-webkit-calendar-picker-indicator {
+  filter: invert(0.2) sepia(1) saturate(10) hue-rotate(220deg) !important;
+  opacity: 1 !important;
+  cursor: pointer;
+}
+
 .modal-body label {
   color: #334155 !important;
   font-weight: 600 !important;
