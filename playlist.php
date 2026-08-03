@@ -7,7 +7,7 @@
 	</div>
 	<div class="form-check form-switch" ng-if="!isEmpty(edit)">
 		<input class="form-check-input" ng-model="overrideSchedules" type="checkbox" id="chkOverride">
-		<label class="form-check-label font-weight-bold" for="chkOverride">Override Name, Active Status, Color & Graphics for Schedules</label>
+		<label class="form-check-label font-weight-bold" for="chkOverride">Force all Schedules to inherit these Graphics</label>
 	</div>
 </div>
 

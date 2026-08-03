@@ -43,21 +43,9 @@
 	<textarea class="form-control mb-3" rows="4" ng-model="ui.newsMsgText" ng-change="updateNewsMsgs()" placeholder="Enter ticker messages (one per line)..."></textarea>
 
 	<div class="row">
-		<div class="col-md-4 mb-2">
-			<label class="form-label small font-weight-bold">Start Minutes</label>
-			<input class="form-control" ng-model="playlist.graphics.news.starts" type="text" placeholder="e.g. 0, 5, 15">
-		</div>
-		<div class="col-md-4 mb-2">
-			<label class="form-label small font-weight-bold">Replays</label>
-			<input class="form-control" ng-model="playlist.graphics.news.replays" type="number">
-		</div>
-		<div class="col-md-4 mb-2">
-			<label class="form-label small font-weight-bold">Ticker Speed</label>
-			<select class="form-control" ng-model="playlist.graphics.news.speed">
-				<option value="SLOW">Slow</option>
-				<option value="FAST">Fast</option>
-				<option value="VERY_FAST">Very Fast</option>
-			</select>
+		<div class="col-md-12 mb-2">
+			<label class="form-label small font-weight-bold">Start Minute</label>
+			<input class="form-control" ng-model="playlist.graphics.news.starts" type="text" placeholder="e.g. 0">
 		</div>
 	</div>
 </div>

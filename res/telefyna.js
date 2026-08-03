@@ -75,8 +75,6 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.playlist.graphics.displayLiveLogo = false;
         $scope.playlist.graphics.news = {};
         $scope.playlist.graphics.news.starts = "";
-        $scope.playlist.graphics.news.replays = 0;
-        $scope.playlist.graphics.news.speed = "FAST";
         $scope.playlist.graphics.news.messages = "";
         $scope.playlist.graphics.lowerThirds = [];
         $scope.lowerThird = {};
