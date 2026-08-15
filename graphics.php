@@ -9,7 +9,7 @@
 		</div>
 		<div class="col-md-6" ng-show="playlist.graphics.displayLogo">
 			<label class="form-label small font-weight-bold mb-1">Logo Position</label>
-			<select class="form-control" ng-model="playlist.graphics.logoPosition">
+			<select class="form-select" ng-model="playlist.graphics.logoPosition">
 				<option value="TOP">Top Right</option>
 				<option value="BOTTOM">Bottom Right</option>
 			</select>
@@ -25,7 +25,7 @@
 		</div>
 		<div class="col-md-6" ng-show="playlist.graphics.displayLiveLogo">
 			<label class="form-label small font-weight-bold mb-1">Logo Position</label>
-			<select class="form-control" ng-model="playlist.graphics.logoPosition">
+			<select class="form-select" ng-model="playlist.graphics.logoPosition">
 				<option value="TOP">Top Right</option>
 				<option value="BOTTOM">Bottom Right</option>
 			</select>
@@ -58,7 +58,7 @@
 				<th scope="col">Delete</th>
 				<th scope="col">Replays</th>
 				<th scope="col">File Name</th>
-				<th scope="col">Starts (Minutes)</th>
+				<th scope="col">Starts (Minutes) <span class="custom-tooltip-wrapper ms-1" data-tooltip="Separate multiple start times with commas (e.g. 0, 10, 15)"><i class="fa-solid fa-circle-info" style="opacity: 0.85; cursor: help;"></i></span></th>
 			</tr>
 		</thead>
 		<tbody>

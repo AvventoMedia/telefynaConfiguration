@@ -79,10 +79,12 @@
             <div class="d-flex align-items-center gap-2">
                 <button type="button" class="btn btn-sm btn-outline-secondary" ng-click="toggleTheme()">
                     <i class="fa-solid" ng-class="theme === 'dark' ? 'fa-sun text-warning' : 'fa-moon text-primary'"></i>
-                    <span class="ms-1">{{theme === 'dark' ? 'Light' : 'Dark'}} Mode</span>
+                    <span class="ms-1">{{theme === 'dark' ? 'Light' : 'Dark'}}</span>
                 </button>
             </div>
-            <small class="opacity-75">v{{config.version || '1.0'}}</small>
+            <div class="text-center opacity-75 mt-2" style="font-size: 0.75rem;">
+                <span><i class="fa-brands fa-android text-success me-1"></i> Supports Telefyna <b>v2.1.0+</b></span>
+            </div>
         </div>
     </aside>
 
@@ -97,6 +99,7 @@
             <span class="header-breadcrumb-active text-capitalize">{{activeTab}}</span>
         </div>
         <div class="header-actions">
+            <span class="border border-secondary rounded px-2 py-1 opacity-75 me-3 d-none d-md-inline" style="font-size: 0.75rem; font-weight: 600; color: inherit;" ng-if="config.version"><i class="fa-solid fa-file-code me-1"></i>v{{config.version}}</span>
             <small class="opacity-75 me-2 d-none d-md-inline" ng-if="config.lastModified">Modified: <b>{{config.lastModified}}</b></small>
             <button class="btn btn-sm btn-outline-secondary" onclick="jQuery('#import-config').click()" type="button" title="Import JSON">
                 <i class="fa-solid fa-file-import"></i><span class="d-none d-md-inline ms-1">Import</span>

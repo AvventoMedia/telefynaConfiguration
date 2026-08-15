@@ -42,8 +42,9 @@ angular.module("Telefyna", ['ngCookies'])
         link: function(scope, element, attrs, ngModel) {
             ngModel.$formatters.push(function(value) {
                 if (value) {
+                    if (typeof value === 'object' && value instanceof Date) return value;
                     var parts = value.split(':');
-                    var d = new Date(1970, 0, 1, parts[0] || 0, parts[1] || 0);
+                    var d = new Date(1970, 0, 1, parseInt(parts[0], 10) || 0, parseInt(parts[1], 10) || 0, 0);
                     return d;
                 }
                 return null;
@@ -357,7 +358,7 @@ angular.module("Telefyna", ['ngCookies'])
         if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
         if (!$scope.playlist.graphics.lowerThirds) $scope.playlist.graphics.lowerThirds = [];
         if (!$scope.ui) $scope.ui = {};
-        $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("#").join("\n") : "";
+        $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\n") : "";
     }
 
     $scope.revise = function() {
@@ -407,7 +408,7 @@ angular.module("Telefyna", ['ngCookies'])
             if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
             if (!$scope.playlist.graphics.lowerThirds) $scope.playlist.graphics.lowerThirds = [];
             if (!$scope.ui) $scope.ui = {};
-            $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("#").join("\n") : "";
+            $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\n") : "";
 
             $scope.playlist.active = playlistActive($scope.playlist);
             // add _type_ property to playlist to determine playlist type in scheduling modal
@@ -1044,7 +1045,7 @@ angular.module("Telefyna", ['ngCookies'])
         if (!$scope.playlist) $scope.playlist = {};
         if (!$scope.playlist.graphics) $scope.playlist.graphics = {};
         if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
-        $scope.playlist.graphics.news.messages = ($scope.ui && $scope.ui.newsMsgText ? $scope.ui.newsMsgText : "").split("\n").map(s => s.trim()).filter(s => s.length > 0).join("#");
+        $scope.playlist.graphics.news.messages = ($scope.ui && $scope.ui.newsMsgText ? $scope.ui.newsMsgText : "").split("\n").map(s => s.trim()).filter(s => s.length > 0).join("~~");
     };
 
     // EPG / DVR Schedule Export (mySDAtv Specification)

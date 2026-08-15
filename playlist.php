@@ -25,14 +25,14 @@
 <?php include 'playlistType.php';?>
 
 <div class="row mt-3">
-	<div class="col-md-6 mb-3">
+	<div class="col-12 mb-3">
 		<label class="form-label font-weight-bold">
 			<span ng-if="playlist.type == 'ONLINE'" class="fw-bold">Stream URL</span>
-			<span ng-if="playlist.type != 'ONLINE'" class="fw-bold">Local Folder Name</span>
+			<span ng-if="playlist.type != 'ONLINE'" class="fw-bold">Local Folder Name <span class="custom-tooltip-wrapper ms-1" data-tooltip="Separate multiple folders or paths with commas (e.g. Folder1,Folder2/Subfolder)"><i class="fa-solid fa-circle-info" style="opacity: 0.85; cursor: help;"></i></span></span>
 		</label>
 		<input class="form-control" ng-model="playlist.urlOrFolder" placeholder="Folder or URL..." required type="text">
 	</div>
-	<div class="col-md-6 mb-3">
+	<div class="col-12 mb-3">
 		<label class="form-label font-weight-bold">Empty Replacer Playlist Index</label>
 		<input class="form-control" ng-model="playlist.emptyReplacer" placeholder="Optional playlist index" type="number">
 	</div>
@@ -99,9 +99,8 @@
 		</div>
 		<div class="col-md-6 mb-3">
 			<div class="card p-3 h-100 border-0 bg-card-subtle" style="border-radius: 12px; border: 2px solid transparent;">
-				<label class="form-label font-weight-bold mb-2">Special Bumper Folder</label>
+				<label class="form-label font-weight-bold mb-2">Special Bumper Folder <span class="custom-tooltip-wrapper ms-1" data-tooltip="Override the default bumper folder for this specific playlist."><i class="fa-solid fa-circle-info" style="opacity: 0.85; cursor: help;"></i></span></label>
 				<input class="form-control" ng-model="playlist.specialBumperFolder" placeholder="Folder Name..." type="text">
-				<small class="opacity-75 mt-2 d-block" style="font-size:0.8rem;">Override the default bumper folder for this specific playlist.</small>
 			</div>
 		</div>
 	</div>

@@ -39,7 +39,7 @@
 					<th scope="col">Role</th>
 					<th scope="col">Attach Config</th>
 					<th scope="col">Log Days</th>
-					<th scope="col">Receiver Email(s)</th>
+					<th scope="col">Receiver Email(s) <span class="custom-tooltip-wrapper ms-1" data-tooltip="Separate multiple emails with commas (e.g. abc@def.com, 123@xyz.com)"><i class="fa-solid fa-circle-info" style="opacity: 0.85; cursor: help;"></i></span></th>
 				</tr>
 			</thead>
 			<tbody>
