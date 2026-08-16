@@ -48,10 +48,16 @@
 	<h6 class="font-weight-bold mb-2">Ticker News & Notifications</h6>
 	<textarea class="form-control mb-3" rows="4" ng-model="ui.newsMsgText" ng-change="updateNewsMsgs()" placeholder="Enter ticker messages (one per line)..."></textarea>
 
-	<div class="row">
-		<div class="col-md-12 mb-2">
+		<div class="row">
+		<div class="col-md-6 mb-2">
 			<label class="form-label small font-weight-bold">Start Minute</label>
 			<input class="form-control" ng-model="playlist.graphics.news.startMinute" type="number" step="any" placeholder="e.g. 0">
+		</div>
+		<div class="col-md-6 mb-2 d-flex align-items-end">
+			<div class="form-check form-switch mb-2">
+				<input class="form-check-input" ng-model="playlist.graphics.news.showTime" type="checkbox">
+				<label class="form-check-label font-weight-bold ms-2">Show Time</label>
+			</div>
 		</div>
 	</div>
 </div>

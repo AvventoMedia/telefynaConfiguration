@@ -469,7 +469,7 @@ angular.module("Telefyna", ['ngCookies'])
         if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
         if (!$scope.playlist.graphics.lowerThirds) $scope.playlist.graphics.lowerThirds = [];
         if (!$scope.ui) $scope.ui = {};
-        $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\\n") : "";
+        $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\n") : "";
     }
 
     $scope.revise = function() {
@@ -519,7 +519,7 @@ angular.module("Telefyna", ['ngCookies'])
             if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
             if (!$scope.playlist.graphics.lowerThirds) $scope.playlist.graphics.lowerThirds = [];
             if (!$scope.ui) $scope.ui = {};
-            $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\\n") : "";
+            $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\n") : "";
 
             $scope.playlist.active = playlistActive($scope.playlist);
             // add _type_ property to playlist to determine playlist type in scheduling modal
@@ -1119,8 +1119,9 @@ angular.module("Telefyna", ['ngCookies'])
         if (g.displayLiveLogo === undefined) g.displayLiveLogo = false;
         if (g.displayRepeatWatermark === undefined) g.displayRepeatWatermark = false;
         if (!g.news) g.news = {};
-        if (g.news.startMinute === undefined) g.news.startMinute = 0.0;
+                if (g.news.startMinute === undefined) g.news.startMinute = 0.0;
         if (g.news.messages === undefined) g.news.messages = "";
+        if (g.news.showTime === undefined) g.news.showTime = (g.news.messages !== "");
         if (!g.lowerThirds) g.lowerThirds = [];
         return g;
     }
