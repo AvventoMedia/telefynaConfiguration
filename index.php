@@ -447,7 +447,7 @@
                             <label class="form-check-label fw-bold text-secondary" for="timeFormatSwitch">12-Hour</label>
                         </div>
                         <label class="form-label mb-0 me-2 fw-bold text-secondary"><i class="fa-solid fa-magnifying-glass me-1"></i>Zoom:</label>
-                        <input type="range" class="form-range" style="width: 150px;" min="0.4" max="1.5" step="0.1" ng-model="ui.gridZoom">
+                        <input type="range" class="form-range" style="width: 150px;" min="0.4" max="1.3" step="0.1" ng-model="ui.gridZoom">
                         <span class="ms-2 fw-bold text-secondary">{{(ui.gridZoom * 100) | number:0}}%</span>
                     </div>
                 </div>
@@ -469,7 +469,7 @@
                     Automation is disabled. Only <b>"{{config.playlists[0].name}}"</b> will play continuously.
                 </div>
 
-                <div ng-if="!isEmpty(previewData.weekly)" class="table-responsive mb-4" ng-style="{'zoom': ui.gridZoom}">
+                <div ng-if="!isEmpty(previewData.weekly)" class="table-responsive mb-4 preview-grid-wrapper" ng-style="{'zoom': ui.gridZoom, '--grid-zoom': ui.gridZoom}">
                     <h5 class="fw-bold mb-3 text-center d-none d-print-block" style="color: #000;">Weekly</h5>
                     <h5 class="fw-bold mb-3 d-print-none"><i class="fa-solid fa-calendar-week me-2" style="color:var(--accent-purple)"></i>Weekly Schedule</h5>
                     <table class="table table-bordered table-hover align-middle text-center shadow-sm">
@@ -500,7 +500,7 @@
                     </table>
                 </div>
 
-                <div ng-if="!isEmpty(previewData.dated)" class="table-responsive" ng-style="{'zoom': ui.gridZoom}">
+                <div ng-if="!isEmpty(previewData.dated)" class="table-responsive preview-grid-wrapper" ng-style="{'zoom': ui.gridZoom, '--grid-zoom': ui.gridZoom}">
                     <h5 class="fw-bold mb-3 d-print-none"><i class="fa-solid fa-calendar-day me-2" style="color:var(--accent-purple)"></i>Specific Date Schedules</h5>
                     <h5 class="fw-bold mb-3 text-center d-none d-print-block" style="color: #000;">Specific Date Schedules</h5>
                     <table class="table table-bordered table-hover align-middle shadow-sm">
