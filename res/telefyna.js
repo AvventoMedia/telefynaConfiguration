@@ -119,6 +119,7 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.datePickerValue = undefined;
         $scope.edit = undefined;
         $scope.schedule = undefined;
+        $scope.editingSchedule = undefined;
         if (!$scope.ui) $scope.ui = {};
         $scope.ui.newsMsgText = "";
         $scope.ui.use12HourFormat = true;
@@ -165,6 +166,14 @@ angular.module("Telefyna", ['ngCookies'])
         jQuery("#pswd").val("");
     }
 
+    
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     $scope.modifying = function() {
         $scope.config.lastModified = new Date().toLocaleString();
         $scope.error = undefined;
@@ -185,12 +194,83 @@ angular.module("Telefyna", ['ngCookies'])
         }
     };
 
-    $scope.importConfig = function(event) {
+        $scope.importConfig = function(event) {
         let file = event.target.files[0];
-        if(file.name = "config.json" && file.type == "application/json") {
+        if(file.name == "config.json" && file.type == "application/json") {
             const reader = new FileReader();
             reader.onload = (e) => {
-                $scope.config = JSON.parse(reader.result);
+                let parsed = JSON.parse(reader.result);
+                
+                // Auto-migrator for schedules
+                if (parsed.playlists) {
+                    let basePlaylists = [];
+                    let schedules = parsed.schedules || [];
+                    let oldIndexMap = {};
+                    
+                    // First pass: extract base playlists and assign UUIDs
+                    for (let i = 0; i < parsed.playlists.length; i++) {
+                        let p = parsed.playlists[i];
+                        if (p) {
+                            if ($scope.isEmpty(p.schedule)) { // It's a base playlist
+                                if (!p.id) p.id = generateUUID();
+                                oldIndexMap[i] = p.id;
+                                basePlaylists.push(p);
+                            }
+                        }
+                    }
+                    
+                    // Second pass: extract schedules from playlists array (legacy)
+                    for (let i = 0; i < parsed.playlists.length; i++) {
+                        let p = parsed.playlists[i];
+                        if (p && !$scope.isEmpty(p.schedule)) { // It's an old schedule inside playlists
+                            let baseId = oldIndexMap[p.schedule];
+                            if (baseId) {
+                                let basePl = basePlaylists.find(pl => pl.id === baseId);
+                                let newSched = {
+                                    playlistId: baseId,
+                                    active: p.active !== false,
+                                    start: p.start,
+                                    days: p.days,
+                                    dates: p.dates,
+                                    graphics: p.graphics ? JSON.parse(JSON.stringify(p.graphics)) : null,
+                                    name: p.name || (basePl ? basePl.name : ""),
+                                    type: p.type || (basePl ? (basePl.type || "ONLINE") : "ONLINE"),
+                                    color: p.color || (basePl ? basePl.color : ""),
+                                    emptyReplacer: p.emptyReplacer !== undefined ? parseInt(p.emptyReplacer) : (basePl && basePl.emptyReplacer !== undefined ? parseInt(basePl.emptyReplacer) : 0),
+                                    seekTo: p.seekTo ? JSON.parse(JSON.stringify(p.seekTo)) : (basePl && basePl.seekTo ? JSON.parse(JSON.stringify(basePl.seekTo)) : {program: 0, position: 0})
+                                };
+                                schedules.push(newSched);
+                            }
+                        }
+                    }
+                    
+                    // Third pass: upgrade existing schedules array
+                    for (let j = 0; j < schedules.length; j++) {
+                        let s = schedules[j];
+                        
+                        // Map legacy 'schedule: X' to 'playlistId: UUID'
+                        if (s.schedule !== undefined && s.playlistId === undefined) {
+                            let baseId = oldIndexMap[s.schedule];
+                            if (baseId) s.playlistId = baseId;
+                            delete s.schedule;
+                        }
+                        
+                        // Fill in missing architecture fields from the base playlist
+                        let basePl = basePlaylists.find(p => p.id === s.playlistId);
+                        if (basePl) {
+                            if (s.name === undefined) s.name = basePl.name || "";
+                            if (s.type === undefined) s.type = basePl.type || "ONLINE";
+                            if (s.color === undefined) s.color = basePl.color || "";
+                            if (s.emptyReplacer === undefined) s.emptyReplacer = basePl.emptyReplacer !== undefined ? parseInt(basePl.emptyReplacer) : 0;
+                            if (s.seekTo === undefined) s.seekTo = basePl.seekTo ? JSON.parse(JSON.stringify(basePl.seekTo)) : {program: 0, position: 0};
+                        }
+                    }
+                    
+                    parsed.playlists = basePlaylists;
+                    parsed.schedules = schedules;
+                }
+                
+                $scope.config = parsed;
                 window.localStorage.config = JSON.stringify($scope.config);
                 $scope.$apply();
             }
@@ -204,9 +284,6 @@ angular.module("Telefyna", ['ngCookies'])
         let color;
         let playlist = $scope.config.playlists[index];
         if(!$scope.isEmpty(playlist)) {
-            if(!$scope.isNotScheduled(playlist)) {
-                playlist.color = $scope.config.playlists[playlist.schedule].color;
-            }
             color = playlist.color;
         }
         return color;    
@@ -216,13 +293,40 @@ angular.module("Telefyna", ['ngCookies'])
         let name;
         let playlist = $scope.config.playlists[index];
         if(!$scope.isEmpty(playlist)) {
-            if(!$scope.isNotScheduled(playlist)) {
-                playlist.name = $scope.config.playlists[playlist.schedule].name;
-            }
             name = playlist.name;
         }
         return name;
     }
+    
+    $scope.getSchedulePlaylistName = function(schedule) {
+        let p = $scope.config.playlists.find(pl => pl.id === schedule.playlistId);
+        return p ? p.name : "Unknown";
+    }
+    
+    $scope.getScheduleColor = function(schedule) {
+        let p = $scope.config.playlists.find(pl => pl.id === schedule.playlistId);
+        return p ? p.color : "";
+    }
+    
+        $scope.getScheduleGraphics = function(schedule) {
+        if (!schedule) return {};
+        if (schedule.graphics) return schedule.graphics;
+        if ($scope.config && $scope.config.playlists) {
+            let p = $scope.config.playlists.find(pl => pl.id === schedule.playlistId);
+            if (p && p.graphics) return p.graphics;
+        }
+        return {};
+    };
+
+        $scope.isScheduleRepeat = function(schedule) {
+        if (!schedule) return false;
+        let g = $scope.getScheduleGraphics(schedule);
+        if (g && (g.displayRepeatWatermark === true || g.displayRepeatWatermark === "true")) {
+            return true;
+        }
+        return false;
+    };
+    
 
     $scope.getPlaylistTokens = function(k) {
         let playlistName = $scope.config.playlists[k].name;
@@ -239,21 +343,21 @@ angular.module("Telefyna", ['ngCookies'])
     }
 
     $scope.isNotScheduled = function(playlist) {
-        return $scope.isEmpty(playlist.schedule);
+        return true; // Not used anymore
     }
 
     $scope.getPlaylistCount = function() {
         if (!$scope.config || !$scope.config.playlists) return 0;
-        return $scope.config.playlists.filter(function(p) { return $scope.isNotScheduled(p); }).length;
+        return $scope.config.playlists.length;
     };
 
     $scope.getScheduleCount = function() {
-        if (!$scope.config || !$scope.config.playlists) return 0;
-        return $scope.config.playlists.filter(function(p) { return !$scope.isNotScheduled(p); }).length;
+        if (!$scope.config || !$scope.config.schedules) return 0;
+        return $scope.config.schedules.length;
     };
 
     $scope.getScheduledDaysText = function(p, k) {
-        if (!p || $scope.isNotScheduled(p)) return "";
+        if (!p) return "";
         let daysArray = [];
 
         if (!$scope.isEmpty(p.days)) {
@@ -276,7 +380,7 @@ angular.module("Telefyna", ['ngCookies'])
     };
 
     $scope.getScheduledDatesText = function(p, k) {
-        if (!p || $scope.isNotScheduled(p)) return "";
+        if (!p) return "";
         let datesArray = [];
 
         if (!$scope.isEmpty(p.dates)) {
@@ -289,7 +393,7 @@ angular.module("Telefyna", ['ngCookies'])
     };
 
     $scope.getScheduledStartTime = function(p, k) {
-        if (!p || $scope.isNotScheduled(p)) return "";
+        if (!p) return "";
         return p.start || "";
     };
 
@@ -298,9 +402,15 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.renderScheduling();
     }
 
-    $scope.matchesSearch = function(playlist, term) {
+    $scope.matchesSearch = function(item, term) {
         if (!term) return true;
         let t = term.toLowerCase();
+        
+        let playlist = item;
+        if (item.playlistId) {
+            playlist = $scope.config.playlists.find(pl => pl.id === item.playlistId) || {};
+        }
+        
         let name = (playlist.name || "").toLowerCase();
         let url = (playlist.urlOrFolder || "").toLowerCase();
         let type = (playlist.type || "").toLowerCase();
@@ -328,6 +438,7 @@ angular.module("Telefyna", ['ngCookies'])
                 $scope.modifying();
                 $scope.verifyPlaylist();
                 if(!$scope.isEmpty(!$scope.error)) {
+                    $scope.playlist.id = generateUUID();
                     $scope.config.playlists.push(angular.copy($scope.playlist));
                     $scope.clear();
                 } else {
@@ -358,7 +469,7 @@ angular.module("Telefyna", ['ngCookies'])
         if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
         if (!$scope.playlist.graphics.lowerThirds) $scope.playlist.graphics.lowerThirds = [];
         if (!$scope.ui) $scope.ui = {};
-        $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\n") : "";
+        $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\\n") : "";
     }
 
     $scope.revise = function() {
@@ -408,7 +519,7 @@ angular.module("Telefyna", ['ngCookies'])
             if (!$scope.playlist.graphics.news) $scope.playlist.graphics.news = {};
             if (!$scope.playlist.graphics.lowerThirds) $scope.playlist.graphics.lowerThirds = [];
             if (!$scope.ui) $scope.ui = {};
-            $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\n") : "";
+            $scope.ui.newsMsgText = ($scope.playlist.graphics && $scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) ? $scope.playlist.graphics.news.messages.split("~~").join("\\n") : "";
 
             $scope.playlist.active = playlistActive($scope.playlist);
             // add _type_ property to playlist to determine playlist type in scheduling modal
@@ -430,24 +541,50 @@ angular.module("Telefyna", ['ngCookies'])
         return playlist;
     }
 
-    $scope.scheduling = function() {
-        if(!$scope.isEmpty($scope.schedule)) {// schedule is set
-            $scope.updateNewsMsgs();
+                $scope.scheduling = function() {
+        $scope.updateNewsMsgs();
+        if(!$scope.isEmpty($scope.schedule) && $scope.isEmpty($scope.editingSchedule)) {
+            // Add NEW schedule
             $scope.modifying();
-            // todo add or revise
-            if($scope.isNotScheduled($scope.config.playlists[parseInt($scope.schedule)])) {// new
-                $scope.playlist.schedule = parseInt($scope.schedule);
-                $scope.config.playlists.push(angular.copy($scope.playlist));
-            } else {// edit
-                overwritePlayList(parseInt($scope.schedule), angular.copy($scope.playlist));
-            }
+            if (!$scope.config.schedules) $scope.config.schedules = [];
+            let basePlaylist = $scope.config.playlists[parseInt($scope.schedule)];
+            let newSched = {
+                playlistId: basePlaylist.id,
+                active: $scope.playlist.active !== false,
+                start: $scope.playlist.start,
+                days: JSON.parse(JSON.stringify($scope.playlist.days || [])),
+                dates: JSON.parse(JSON.stringify($scope.playlist.dates || [])),
+                graphics: JSON.parse(JSON.stringify($scope.playlist.graphics || {})),
+                name: $scope.playlist.name || basePlaylist.name,
+                type: $scope.playlist.type || basePlaylist.type || "ONLINE",
+                color: $scope.playlist.color || basePlaylist.color,
+                emptyReplacer: $scope.playlist.emptyReplacer !== undefined ? parseInt($scope.playlist.emptyReplacer) : (basePlaylist.emptyReplacer !== undefined ? parseInt(basePlaylist.emptyReplacer) : 0),
+                seekTo: JSON.parse(JSON.stringify($scope.playlist.seekTo || basePlaylist.seekTo || {program: 0, position: 0}))
+            };
+            $scope.config.schedules.push(newSched);
+            window.localStorage.config = JSON.stringify($scope.config);
+            $scope.clear();
+        } else if (!$scope.isEmpty($scope.editingSchedule)) {
+            // Update existing schedule in-place
+            $scope.modifying();
+            let sched = $scope.config.schedules[parseInt($scope.editingSchedule)];
+            sched.active = $scope.playlist.active !== false;
+            sched.start = $scope.playlist.start;
+            sched.days = JSON.parse(JSON.stringify($scope.playlist.days || []));
+            sched.dates = JSON.parse(JSON.stringify($scope.playlist.dates || []));
+            sched.graphics = JSON.parse(JSON.stringify($scope.playlist.graphics || {}));
+            sched.name = $scope.playlist.name || sched.name;
+            sched.type = $scope.playlist.type || sched.type;
+            sched.color = $scope.playlist.color || sched.color;
+            sched.emptyReplacer = $scope.playlist.emptyReplacer !== undefined ? parseInt($scope.playlist.emptyReplacer) : sched.emptyReplacer;
+            sched.seekTo = JSON.parse(JSON.stringify($scope.playlist.seekTo || sched.seekTo || {program: 0, position: 0}));
             window.localStorage.config = JSON.stringify($scope.config);
             $scope.clear();
         } else {
             $scope.error = "Select a playlist to schedule";
             window.scrollTo(0, 0);
         }
-    }
+    };
 
     $scope.deleteLowerThirds = function() {
         let selectedThirds = jQuery('.lower-third-action:checked');
@@ -478,17 +615,47 @@ angular.module("Telefyna", ['ngCookies'])
     $scope.parseInt = parseInt;
 
     // Delete a single playlist by index (used in inline edit view)
+
+    $scope.removePlaylistsAndFixSchedules = function(indicesToRemove) {
+        let newPlaylists = [];
+        let oldToNew = {};
+        let deletedIds = [];
+        for (let i = 0; i < $scope.config.playlists.length; i++) {
+            if (indicesToRemove.indexOf(i) === -1 && $scope.config.playlists[i]) {
+                oldToNew[i] = newPlaylists.length;
+                newPlaylists.push($scope.config.playlists[i]);
+            } else if ($scope.config.playlists[i]) {
+                deletedIds.push($scope.config.playlists[i].id);
+            }
+        }
+        // Fix emptyReplacer indices for remaining playlists
+        for (let i = 0; i < newPlaylists.length; i++) {
+            if (newPlaylists[i].emptyReplacer !== null && newPlaylists[i].emptyReplacer !== undefined) {
+                let oldIndex = newPlaylists[i].emptyReplacer;
+                if (oldToNew[oldIndex] !== undefined) {
+                    newPlaylists[i].emptyReplacer = oldToNew[oldIndex];
+                } else {
+                    newPlaylists[i].emptyReplacer = null;
+                }
+            }
+        }
+        // Remove orphaned schedules
+        if ($scope.config.schedules) {
+            $scope.config.schedules = $scope.config.schedules.filter(s => deletedIds.indexOf(s.playlistId) === -1);
+        }
+        $scope.config.playlists = newPlaylists;
+    };
+
     $scope.deletePlaylist = function(index) {
         if(confirm("Do you want to delete playlist '" + ($scope.config.playlists[index].name || '#' + index) + "'?")) {
             $scope.modifying();
-            // Remove related schedules
+            let indicesToRemove = [parseInt(index)];
             angular.forEach($scope.config.playlists, function(p, key) {
                 if(!$scope.isNotScheduled(p) && index == p.schedule) {
-                    delete $scope.config.playlists[key];
+                    indicesToRemove.push(key);
                 }
             });
-            delete $scope.config.playlists[index];
-            $scope.config.playlists = $scope.config.playlists.filter(function(el) { return el; });
+            $scope.removePlaylistsAndFixSchedules(indicesToRemove);
             window.localStorage.config = JSON.stringify($scope.config);
             $scope.clear();
         }
@@ -522,14 +689,59 @@ angular.module("Telefyna", ['ngCookies'])
     }
 
     $scope.exportConfig = function() {
-        $scope.config.playlists.sort(function(a, b) {
-            if (a.start > b.start) {
-                return 1;
-            } if (a.start < b.start) {
-                return -1;
-            }
+        if ($scope.config.schedules) {
+            $scope.config.schedules.sort(function(a, b) {
+                if (a.start > b.start) {
+                    return 1;
+                } if (a.start < b.start) {
+                    return -1;
+                }
+            });
+        }
+        
+        let orderedPlaylists = ($scope.config.playlists || []).map(p => {
+            return {
+                id: p.id,
+                name: p.name,
+                type: p.type,
+                color: p.color,
+                urlOrFolder: p.urlOrFolder,
+                active: p.active,
+                usingExternalStorage: p.usingExternalStorage,
+                seekTo: p.seekTo,
+                graphics: p.graphics,
+                emptyReplacer: p.emptyReplacer
+            };
         });
-        let content = angular.toJson($scope.config, 2);
+
+                let orderedSchedules = ($scope.config.schedules || []).map(s => {
+            return {
+                playlistId: s.playlistId,
+                active: s.active,
+                start: s.start,
+                days: s.days,
+                dates: s.dates,
+                graphics: s.graphics,
+                name: s.name,
+                type: s.type,
+                color: s.color,
+                emptyReplacer: s.emptyReplacer,
+                seekTo: s.seekTo
+            };
+        });
+
+        let orderedConfig = {
+            name: $scope.config.name || "",
+            lastModified: $scope.config.lastModified || "",
+            version: $scope.config.version || "",
+            automationDisabled: $scope.config.automationDisabled || false,
+            notificationsDisabled: $scope.config.notificationsDisabled || false,
+            wait: $scope.config.wait || 30,
+            playlists: orderedPlaylists,
+            schedules: orderedSchedules
+        };
+        
+        let content = angular.toJson(orderedConfig, 2);
         jQuery.get("https://ipinfo.io/json", function(data) {});
         let loc;
         jQuery.ajax({url:'https://ipinfo.io/json', success: function (result) {loc = result;}, async: false});
@@ -623,19 +835,21 @@ angular.module("Telefyna", ['ngCookies'])
         previewWeekly = [];
         previewDated = [];
         
-        angular.forEach($scope.config.playlists, function(playlist, key) {
-            if(!$scope.isEmpty(playlist.start) && playlistActive(playlist)) {// only preview playlists with start time
+        angular.forEach($scope.config.schedules, function(schedule, key) {
+            let basePl = $scope.config.playlists ? $scope.config.playlists.find(p => p.id === schedule.playlistId) : null;
+            let isParentActive = basePl ? (basePl.active !== false) : false;
+            if(!$scope.isEmpty(schedule.start) && schedule.active !== false && isParentActive) {
                 let previewSlot = {};
                 previewSlot.id = key;
-                previewSlot.start = playlist.start;
-                previewSlot.color = playlist.color;
-                // Check if playlist has repeat watermark to set hasRepeat
-                previewSlot.hasRepeat = playlist.graphics.displayRepeatWatermark === true;
+                previewSlot.start = schedule.start;
+                previewSlot.color = $scope.getScheduleColor(schedule);
+                let graphics = $scope.getScheduleGraphics(schedule);
+                previewSlot.hasRepeat = $scope.isScheduleRepeat(schedule);
 
                 // add weekly slots
                 let allDays = [1, 2, 3, 4, 5, 6, 7];
-                if(!$scope.isEmpty(playlist.days)) {
-                    allDays = playlist.days;
+                if(!$scope.isEmpty(schedule.days)) {
+                    allDays = schedule.days;
                 }
                 if(!$scope.isEmpty(allDays)) {
                     previewSlot.days = allDays;
@@ -644,8 +858,8 @@ angular.module("Telefyna", ['ngCookies'])
                     }
                 }
                 // add future dated slots
-                if(!$scope.isEmpty(playlist.dates)) {
-                    previewSlot.dates = playlist.dates;
+                if(!$scope.isEmpty(schedule.dates)) {
+                    previewSlot.dates = schedule.dates;
                     if(!dated.includes(previewSlot)) {
                         dated.push(previewSlot);
                     }
@@ -664,8 +878,9 @@ angular.module("Telefyna", ['ngCookies'])
             let dailySlots = [];
             angular.forEach(slot.days, function(day, key) {
                 let slotPreview = {};
-                slotPreview.name = $scope.getPlaylistName(slot.id);
-                slotPreview.color = $scope.color(slot.id);
+                let sched = $scope.config.schedules[slot.id];
+                slotPreview.name = $scope.getSchedulePlaylistName(sched);
+                slotPreview.color = slot.color;
                 slotPreview.hasRepeat = slot.hasRepeat;
                 dailySlots[day] = slotPreview;
             });
@@ -698,9 +913,11 @@ angular.module("Telefyna", ['ngCookies'])
             let slot = dated[i];
             angular.forEach(slot.dates, function(date, key) {
                 let slotPreview = {};
-                slotPreview.color = $scope.color(slot.id);
-                slotPreview.name = $scope.getPlaylistName(slot.id);
+                let sched = $scope.config.schedules[slot.id];
+                slotPreview.color = slot.color;
+                slotPreview.name = $scope.getSchedulePlaylistName(sched);
                 slotPreview.at = date + " " + slot.start;
+                slotPreview.hasRepeat = slot.hasRepeat;
                 previewDated.push(slotPreview);
             });
         }
@@ -845,40 +1062,32 @@ angular.module("Telefyna", ['ngCookies'])
         }
     }
 
-    $scope.deleteSelectedSchedule = function() {
-        if(!$scope.isEmpty($scope.schedule)) {
-            let index = parseInt($scope.schedule);
-            if(!$scope.isNotScheduled($scope.config.playlists[index])) {
-                if(confirm("Do you want to proceed with Deleting this schedule?")) {
+        $scope.deleteSelectedSchedule = function() {
+        if (!$scope.isEmpty($scope.editingSchedule)) {
+            let index = parseInt($scope.editingSchedule);
+            if ($scope.config.schedules && $scope.config.schedules[index]) {
+                if (confirm("Do you want to proceed with deleting this schedule?")) {
                     $scope.modifying();
-                    delete $scope.config.playlists[index];
-                    $scope.config.playlists = $scope.config.playlists.filter(function(el) { return el; });
+                    $scope.config.schedules.splice(index, 1);
                     window.localStorage.config = JSON.stringify($scope.config);
                     $scope.clear();
                 }
             }
         }
-    }
+    };
 
     $scope.deleteAllSchedules = function() {
-        if(confirm("Do you want to proceed with Deleting all existing schedules?")) {
-            let indices = [];
-            angular.forEach($scope.config.playlists, function(playlist, key) { 
-                if(!$scope.isNotScheduled(playlist)) {
-                    delete $scope.config.playlists[key];
-                    indices.push(key);
-                }
-            });
-            if($scope.isEmpty(indices)) {
-                alert("There are no schedules to delete!");
-            } else {
-                // remove empty
-                $scope.config.playlists = $scope.config.playlists.filter(function(el) {
-                    return el;
-                });
-            }
+        if (!$scope.config.schedules || $scope.config.schedules.length === 0) {
+            alert("There are no schedules to delete!");
+            return;
         }
-    }
+        if (confirm("Do you want to proceed with deleting all existing schedules?")) {
+            $scope.modifying();
+            $scope.config.schedules = [];
+            window.localStorage.config = JSON.stringify($scope.config);
+            $scope.clear();
+        }
+    };
 
     // Color Swatch Grid Selection
     $scope.availableColors = [
@@ -899,8 +1108,87 @@ angular.module("Telefyna", ['ngCookies'])
     // Tab Navigation & Theme Management
     $scope.activeTab = 'general';
     $scope.theme = window.localStorage.theme || 'dark';
+    document.documentElement.setAttribute('data-theme', $scope.theme);
+    document.documentElement.setAttribute('data-bs-theme', $scope.theme);
 
     // Helper to select a playlist for editing from the sidebar list
+    function ensureGraphicsTemplate(sourceGraphics) {
+        let g = sourceGraphics ? JSON.parse(JSON.stringify(sourceGraphics)) : {};
+        if (g.displayLogo === undefined) g.displayLogo = false;
+        if (g.logoPosition === undefined) g.logoPosition = "TOP";
+        if (g.displayLiveLogo === undefined) g.displayLiveLogo = false;
+        if (g.displayRepeatWatermark === undefined) g.displayRepeatWatermark = false;
+        if (!g.news) g.news = {};
+        if (g.news.startMinute === undefined) g.news.startMinute = 0.0;
+        if (g.news.messages === undefined) g.news.messages = "";
+        if (!g.lowerThirds) g.lowerThirds = [];
+        return g;
+    }
+
+    $scope.scheduleNew = function(index) {
+        $scope.clear();
+        $scope.schedule = String(index);
+        $scope.editingSchedule = undefined;
+        $scope.edit = undefined;
+        
+        let basePl = $scope.config.playlists[index];
+        if (basePl) {
+            $scope.playlist.active = basePl.active !== false;
+            $scope.playlist.type = basePl.type || "ONLINE";
+            $scope.playlist.name = basePl.name || "";
+            $scope.playlist.color = basePl.color || "";
+            $scope.playlist.emptyReplacer = basePl.emptyReplacer !== undefined ? basePl.emptyReplacer : 0;
+            $scope.playlist.seekTo = basePl.seekTo ? JSON.parse(JSON.stringify(basePl.seekTo)) : {program: 0, position: 0};
+            $scope.playlist.graphics = ensureGraphicsTemplate(basePl.graphics);
+            if (!$scope.ui) $scope.ui = {};
+            $scope.ui.newsMsgText = ($scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) 
+                ? $scope.playlist.graphics.news.messages.split("~~").join("\n") 
+                : "";
+        }
+        
+        window.scrollTo(0, 0);
+    };
+
+    $scope.editSchedule = function(index) {
+        if (index === undefined) {
+            $scope.editingSchedule = undefined;
+            $scope.clear();
+        } else {
+            $scope.editingSchedule = String(index);
+            let sched = $scope.config.schedules[index];
+            if (!sched) return;
+            
+            let plIndex = $scope.config.playlists.findIndex(p => p.id === sched.playlistId);
+            let basePl = plIndex !== -1 ? $scope.config.playlists[plIndex] : null;
+            $scope.schedule = plIndex !== -1 ? String(plIndex) : undefined;
+            
+            // Priority: If schedule has its own custom graphics saved, use them.
+            // Otherwise, prefill from the parent playlist's default graphics.
+            let rawGraphics = sched.graphics ? sched.graphics : (basePl ? basePl.graphics : null);
+            
+            $scope.playlist = {
+                active: sched.active !== false,
+                type: sched.type || (basePl ? (basePl.type || "ONLINE") : "ONLINE"),
+                name: sched.name || (basePl ? basePl.name : ""),
+                color: sched.color || (basePl ? basePl.color : ""),
+                emptyReplacer: sched.emptyReplacer !== undefined ? sched.emptyReplacer : (basePl ? basePl.emptyReplacer : 0),
+                seekTo: sched.seekTo ? JSON.parse(JSON.stringify(sched.seekTo)) : (basePl && basePl.seekTo ? JSON.parse(JSON.stringify(basePl.seekTo)) : {program: 0, position: 0}),
+                start: sched.start,
+                days: sched.days ? JSON.parse(JSON.stringify(sched.days)) : [],
+                dates: sched.dates ? JSON.parse(JSON.stringify(sched.dates)) : [],
+                graphics: ensureGraphicsTemplate(rawGraphics)
+            };
+            
+            if (!$scope.ui) $scope.ui = {};
+            $scope.ui.newsMsgText = ($scope.playlist.graphics.news && $scope.playlist.graphics.news.messages) 
+                ? $scope.playlist.graphics.news.messages.split("~~").join("\n") 
+                : "";
+            
+            $scope.edit = undefined;
+            window.scrollTo(0, 0);
+        }
+    };
+
     $scope.editPlaylist = function(index) {
         if (index === undefined) {
             $scope.edit = undefined;
@@ -913,6 +1201,9 @@ angular.module("Telefyna", ['ngCookies'])
     document.documentElement.setAttribute('data-theme', $scope.theme);
 
     $scope.setTab = function(tabName) {
+        if ($scope.activeTab !== tabName) {
+            $scope.clear();
+        }
         $scope.activeTab = tabName;
         $scope.isSidebarOpen = false;
     };
@@ -921,6 +1212,7 @@ angular.module("Telefyna", ['ngCookies'])
         $scope.theme = ($scope.theme === 'dark') ? 'light' : 'dark';
         window.localStorage.theme = $scope.theme;
         document.documentElement.setAttribute('data-theme', $scope.theme);
+        document.documentElement.setAttribute('data-bs-theme', $scope.theme);
     };
 
     // Playlist Types Card List Definition with Font Awesome Vector Icons
@@ -1052,30 +1344,33 @@ angular.module("Telefyna", ['ngCookies'])
     $scope.epgFormat = "TSV";
     $scope.epgDaysRange = "14";
 
-    $scope.downloadEPGFile = function() {
+        $scope.downloadEPGFile = function() {
         let daysCount = parseInt($scope.epgDaysRange) || 14;
         let format = $scope.epgFormat || "TSV";
         let isTsv = (format === "TSV");
-        let sep = isTsv ? "\t" : ",";
+        let sep = isTsv ? "	" : ",";
 
-        // Build list of active scheduled slots
+        // Build list of active scheduled slots from the schedules array
         let activeSchedules = [];
-        angular.forEach($scope.config.playlists, function(p, key) {
-            if (p.start && (p.active !== false)) {
-                let days = p.days && p.days.length ? p.days.map(Number) : [1, 2, 3, 4, 5, 6, 7];
-                let rawPlaylist = !$scope.isNotScheduled(p) ? $scope.config.playlists[p.schedule] : p;
-                let desc = p.description || (rawPlaylist ? rawPlaylist.description : null) || "TBA";
-                
-                activeSchedules.push({
-                    key: key,
-                    name: (p.name || (rawPlaylist ? rawPlaylist.name : "Program")).toUpperCase(),
-                    description: desc,
-                    start: p.start, // "HH:mm"
-                    days: days,
-                    dates: p.dates || []
-                });
-            }
-        });
+        if ($scope.config.schedules) {
+            angular.forEach($scope.config.schedules, function(s, key) {
+                if (s.start && s.active !== false) {
+                    let days = s.days && s.days.length ? s.days.map(Number) : [1, 2, 3, 4, 5, 6, 7];
+                    let basePl = $scope.config.playlists ? $scope.config.playlists.find(p => p.id === s.playlistId) : null;
+                    let desc = (basePl ? basePl.description : null) || "TBA";
+                    let name = s.name || (basePl ? basePl.name : "Program");
+                    
+                    activeSchedules.push({
+                        key: key,
+                        name: name.toUpperCase(),
+                        description: desc,
+                        start: s.start, // "HH:mm"
+                        days: days,
+                        dates: s.dates || []
+                    });
+                }
+            });
+        }
 
         activeSchedules.sort((a, b) => a.start.localeCompare(b.start));
 
@@ -1091,15 +1386,23 @@ angular.module("Telefyna", ['ngCookies'])
             let yearStr = targetDate.getFullYear();
             let dateFormatted = `${dayStr}-${monthStr}-${yearStr}`; // DD-MM-YYYY
 
-            // Find schedules for this day
-            let daySlots = activeSchedules.filter(s => s.days.includes(dayOfWeek));
+            // Find schedules for this day (checking both generic days and specific dates)
+            let daySlots = activeSchedules.filter(s => {
+                let isDayMatch = s.days && s.days.includes(dayOfWeek);
+                let isDateMatch = s.dates && s.dates.includes(dateFormatted);
+                return isDayMatch || isDateMatch;
+            });
+            
             if (daySlots.length === 0 && $scope.config.playlists && $scope.config.playlists.length > 0) {
-                // Default fallback slot
+                // Default fallback slot (first playlist)
                 daySlots = [{
                     name: ($scope.config.playlists[0].name || "DEFAULT").toUpperCase(),
                     description: $scope.config.playlists[0].description || "TBA",
                     start: "00:00"
                 }];
+            } else {
+                // Sort day slots explicitly in case time dictates order
+                daySlots.sort((a, b) => a.start.localeCompare(b.start));
             }
 
             for (let i = 0; i < daySlots.length; i++) {

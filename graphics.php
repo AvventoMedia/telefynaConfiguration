@@ -3,8 +3,10 @@
 	<div class="row align-items-center mb-2">
 		<div class="col-md-6">
 			<div class="form-check form-switch">
-				<input class="form-check-input" id="chkDisplayLogo" ng-model="playlist.graphics.displayLogo" type="checkbox" ng-change="uncheckOther(playlist.graphics.displayLogo, 'displayLiveLogo')">
-				<label class="form-check-label font-weight-bold" for="chkDisplayLogo">Display Channel Logo (<code>telefyna/logo.png</code>)</label>
+				<label class="form-check-label font-weight-bold d-flex align-items-center gap-2" style="cursor: pointer;">
+					<input class="form-check-input" ng-model="playlist.graphics.displayLogo" type="checkbox" ng-change="uncheckOther(playlist.graphics.displayLogo, 'displayLiveLogo')">
+					<span>Display Channel Logo (<code>telefyna/logo.png</code>)</span>
+				</label>
 			</div>
 		</div>
 		<div class="col-md-6" ng-show="playlist.graphics.displayLogo">
@@ -19,8 +21,10 @@
 	<div class="row align-items-center mb-2" ng-if="playlist.type == 'ONLINE'">
 		<div class="col-md-6">
 			<div class="form-check form-switch">
-				<input class="form-check-input" id="chkLiveLogo" ng-model="playlist.graphics.displayLiveLogo" type="checkbox" ng-change="uncheckOther(playlist.graphics.displayLiveLogo, 'displayLogo')">
-				<label class="form-check-label font-weight-bold" for="chkLiveLogo">Display Live Stream Logo (<code>telefyna/watermark/live.png</code>)</label>
+				<label class="form-check-label font-weight-bold d-flex align-items-center gap-2" style="cursor: pointer;">
+					<input class="form-check-input" ng-model="playlist.graphics.displayLiveLogo" type="checkbox" ng-change="uncheckOther(playlist.graphics.displayLiveLogo, 'displayLogo')">
+					<span>Display Live Stream Logo (<code>telefyna/watermark/live.png</code>)</span>
+				</label>
 			</div>
 		</div>
 		<div class="col-md-6" ng-show="playlist.graphics.displayLiveLogo">
@@ -33,8 +37,10 @@
 	</div>
 
 	<div class="form-check form-switch mt-2" ng-if="playlist.type != 'ONLINE'">
-		<input class="form-check-input" id="chkRepeatWatermark" ng-model="playlist.graphics.displayRepeatWatermark" type="checkbox">
-		<label class="form-check-label font-weight-bold" for="chkRepeatWatermark">Display Repeat Program Watermark (<code>telefyna/watermark/repeat.png</code>)</label>
+		<label class="form-check-label font-weight-bold d-flex align-items-center gap-2" style="cursor: pointer;">
+			<input class="form-check-input" ng-model="playlist.graphics.displayRepeatWatermark" type="checkbox">
+			<span>Display Repeat Program Watermark (<code>telefyna/watermark/repeat.png</code>)</span>
+		</label>
 	</div>
 </div>
 

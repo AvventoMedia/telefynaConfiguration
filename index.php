@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="dark" data-bs-theme="dark">
 
 <head>
     <meta charset="utf-8">
@@ -148,7 +148,7 @@
                         <div class="flex-grow-1 position-relative" style="min-height: 300px;">
                             <div class="position-absolute w-100 h-100 overflow-auto" ng-if="!isEmpty(config.playlists)">
                                 <div ng-repeat="(k, p) in config.playlists track by k"
-                                     ng-if="isNotScheduled(p) && matchesSearch(p, searchConfigured)"
+                                     ng-if="matchesSearch(p, searchConfigured)"
                                      class="playlist-list-item d-flex align-items-center justify-content-between p-3 mb-2 rounded-3"
                                      ng-class="{'playlist-list-active': edit === '' + k}"
                                      ng-click="editPlaylist(k)"
@@ -156,7 +156,7 @@
                                     <div class="d-flex align-items-center gap-2 overflow-hidden">
                                         <span class="d-inline-block rounded-circle flex-shrink-0" style="width:10px;height:10px;background-color:{{p.color || '#3b82f6'}}"></span>
                                         <div class="overflow-hidden w-100 pe-2">
-                                            <div class="fw-bold text-truncate">{{getPlaylistName(k)}} <span class="opacity-75 small fw-normal">#{{k+1}}</span></div>
+                                            <div class="fw-bold text-truncate">{{p.name || 'Unknown'}} <span class="opacity-75 small fw-normal">#{{k+1}}</span></div>
                                             <div class="d-flex flex-wrap gap-1 mt-1 mb-1">
                                                 <span class="badge bg-secondary" ng-if="!isEmpty(p.start)" style="font-size: 0.7rem; opacity:0.85"><i class="fa-regular fa-clock me-1"></i>{{p.start}}</span>
                                                 <span class="badge bg-secondary" ng-if="!isEmpty(p.days)" style="font-size: 0.7rem; opacity:0.85"><i class="fa-regular fa-calendar-days me-1"></i>{{p.days.length}} Days</span>
@@ -241,34 +241,82 @@
                 <!-- Sidebar -->
                 <div class="mb-4" ng-class="schedulingSidebarExpanded ? 'col-lg-4' : 'd-none'">
                     <div class="card p-3 h-100 d-flex flex-column">
-                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2" style="color:var(--accent-purple)"></i>Select Playlist</h6>
+                        <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2" style="color:var(--accent-purple)"></i>Schedules</h6>
                         <input class="form-control mb-3" type="text" placeholder="Search by title..." ng-model="searchScheduling">
                         
                         <div class="flex-grow-1 position-relative" style="min-height: 300px;">
-                            <div class="position-absolute w-100 h-100 overflow-auto border rounded-3 p-2 bg-card">
-                                <div ng-repeat="(k, p) in config.playlists track by k"
-                                     ng-if="matchesSearch(p, searchScheduling)"
-                                     class="playlist-list-item d-flex align-items-center justify-content-between p-2 mb-1 rounded"
-                                     ng-class="{'playlist-list-active': schedule === '' + k}"
-                                     ng-click="schedulePlaylist(k)"
-                                     style="cursor:pointer; transition: all 0.15s ease;">
-                                    <div class="d-flex align-items-center gap-2 overflow-hidden">
-                                        <span class="d-inline-block rounded-circle flex-shrink-0" style="width:10px;height:10px;background-color:{{p.color || '#3b82f6'}}"></span>
-                                        <div class="overflow-hidden w-100 pe-2">
-                                            <div class="fw-bold text-truncate">{{getPlaylistName(k)}} <span class="opacity-75 small fw-normal">#{{k+1}}</span></div>
-                                            <div class="d-flex flex-wrap gap-1 mt-1">
-                                                <span class="badge bg-secondary" ng-if="!isEmpty(getScheduledStartTime(p, k))" style="font-size: 0.65rem; opacity:0.85"><i class="fa-regular fa-clock me-1"></i>{{getScheduledStartTime(p, k)}}</span>
-                                                <span class="badge bg-primary" ng-if="!isEmpty(getScheduledDaysText(p, k))" style="font-size: 0.65rem;"><i class="fa-regular fa-calendar-days me-1"></i>{{getScheduledDaysText(p, k)}}</span>
-                                                <span class="badge bg-info" ng-if="!isEmpty(getScheduledDatesText(p, k))" style="font-size: 0.65rem;"><i class="fa-solid fa-calendar me-1"></i>{{getScheduledDatesText(p, k)}}</span>
-                                                <span class="badge bg-secondary" ng-if="p.graphics.displayRepeatWatermark" style="font-size: 0.65rem; opacity:0.85"><i class="fa-solid fa-repeat"></i></span>
+                            <div class="position-absolute w-100 h-100 overflow-auto rounded-3 bg-card" style="border: 1px solid var(--border-color);">
+                                <div class="accordion accordion-flush" id="schedulesAccordion">
+                                    
+                                    <!-- Playlists Accordion Item -->
+                                    <div class="accordion-item" style="background: transparent;">
+                                        <h2 class="accordion-header" id="headingPlaylists">
+                                            <button class="accordion-button py-2 fw-bold small text-uppercase shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePlaylists" aria-expanded="true" aria-controls="collapsePlaylists" style="background: rgba(0,0,0,0.02); color: var(--text-color);">
+                                                Available Playlists
+                                            </button>
+                                        </h2>
+                                        <div id="collapsePlaylists" class="accordion-collapse collapse show" aria-labelledby="headingPlaylists">
+                                            <div class="accordion-body p-2">
+                                                <div ng-repeat="(k, p) in config.playlists track by k"
+                                                     ng-if="matchesSearch(p, searchScheduling)"
+                                                     class="playlist-list-item d-flex align-items-center justify-content-between p-2 mb-1 rounded"
+                                                     ng-class="{'playlist-list-active': schedule === '' + k && editingSchedule === undefined}"
+                                                     ng-click="scheduleNew(k)"
+                                                     style="cursor:pointer; transition: all 0.15s ease;">
+                                                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                                        <span class="d-inline-block rounded-circle flex-shrink-0" style="width:10px;height:10px;background-color:{{p.color || '#3b82f6'}}"></span>
+                                                        <div class="overflow-hidden w-100 pe-2">
+                                                            <div class="fw-bold text-truncate">{{p.name || 'Unknown'}}</div>
+                                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                                <span class="badge rounded-pill" ng-class="p.active !== false ? 'bg-success' : 'bg-danger'" style="font-size: 0.65rem; opacity:0.85">
+                                                                    {{p.active !== false ? 'Active' : 'Inactive'}}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="opacity-75 text-center small p-2" ng-if="isEmpty(config.playlists)">No playlists available.</div>
                                             </div>
                                         </div>
                                     </div>
-                                    <span class="badge rounded-pill" ng-class="p.active !== false ? 'bg-success' : 'bg-danger'">
-                                        {{p.active !== false ? 'Active' : 'Inactive'}}
-                                    </span>
+
+                                    <!-- Active Schedules Accordion Item -->
+                                    <div class="accordion-item" style="background: transparent;">
+                                        <h2 class="accordion-header" id="headingSchedules">
+                                            <button class="accordion-button py-2 fw-bold small text-uppercase shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSchedules" aria-expanded="true" aria-controls="collapseSchedules" style="background: rgba(0,0,0,0.02); color: var(--text-color);">
+                                                Schedules
+                                            </button>
+                                        </h2>
+                                        <div id="collapseSchedules" class="accordion-collapse collapse show" aria-labelledby="headingSchedules">
+                                            <div class="accordion-body p-2">
+                                                <div ng-repeat="(k, p) in config.schedules track by k"
+                                                     ng-if="matchesSearch(p, searchScheduling)"
+                                                     class="playlist-list-item d-flex align-items-center justify-content-between p-2 mb-1 rounded"
+                                                     ng-class="{'playlist-list-active': editingSchedule === '' + k}"
+                                                     ng-click="editSchedule(k)"
+                                                     style="cursor:pointer; transition: all 0.15s ease;">
+                                                    <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                                        <span class="d-inline-block rounded-circle flex-shrink-0" style="width:10px;height:10px;background-color:{{getScheduleColor(p) || '#3b82f6'}}"></span>
+                                                        <div class="overflow-hidden w-100 pe-2">
+                                                            <div class="fw-bold text-truncate">{{getSchedulePlaylistName(p)}} <span class="opacity-75 small fw-normal">#{{k+1}}</span></div>
+                                                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                                                <span class="badge bg-secondary" ng-if="!isEmpty(getScheduledStartTime(p, k))" style="font-size: 0.65rem; opacity:0.85"><i class="fa-regular fa-clock me-1"></i>{{getScheduledStartTime(p, k)}}</span>
+                                                                <span class="badge bg-primary" ng-if="!isEmpty(getScheduledDaysText(p, k))" style="font-size: 0.65rem;"><i class="fa-regular fa-calendar-days me-1"></i>{{getScheduledDaysText(p, k)}}</span>
+                                                                <span class="badge bg-info" ng-if="!isEmpty(getScheduledDatesText(p, k))" style="font-size: 0.65rem;"><i class="fa-solid fa-calendar me-1"></i>{{getScheduledDatesText(p, k)}}</span>
+                                                                <span class="badge bg-danger" ng-if="isScheduleRepeat(p)" style="font-size: 0.65rem; opacity:0.85" title="Repeat Program"><i class="fa-solid fa-repeat me-1"></i>Repeat</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="badge rounded-pill" ng-class="p.active !== false ? 'bg-success' : 'bg-danger'">
+                                                        {{p.active !== false ? 'Active' : 'Inactive'}}
+                                                    </span>
+                                                </div>
+                                                <div class="opacity-75 text-center small p-2" ng-if="isEmpty(config.schedules)">No active schedules.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
-                                <div class="opacity-75 text-center small p-3" ng-if="isEmpty(config.playlists)">No playlists available to schedule.</div>
                             </div>
                         </div>
                     </div>
@@ -362,7 +410,7 @@
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                        <button class="btn btn-outline-danger" type="button" ng-click="deleteSelectedSchedule()" ng-disabled="isEmpty(schedule) || isNotScheduled(config.playlists[schedule])">
+                        <button class="btn btn-outline-danger" type="button" ng-click="deleteSelectedSchedule()" ng-disabled="isEmpty(editingSchedule)">
                             <i class="fa-solid fa-trash me-1"></i> Delete Selected
                         </button>
                         <div class="d-flex gap-2">
